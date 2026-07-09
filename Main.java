@@ -18,6 +18,7 @@ public class Main {
             System.out.println("实验室设备预约系统");
             System.out.println("1. 查看设备列表");
             System.out.println("2. 查看预约记录");
+            System.out.println("3. 新增预约");
             System.out.println("0. 退出系统");
             System.out.print("请输入功能编号：");
 
@@ -29,6 +30,9 @@ public class Main {
                     break;
                 case 2:
                     showReservations(reservations);
+                    break;
+                case 3:
+                    addReservation(scanner, reservations);
                     break;
                 case 0:
                     System.out.println("系统已退出");
@@ -58,5 +62,25 @@ public class Main {
         for (Reservation reservation : reservations) {
             reservation.printInfo();
         }
+    }
+
+    public static void addReservation(Scanner scanner, ArrayList<Reservation> reservations) {
+        System.out.print("请输入设备编号：");
+        int deviceId = scanner.nextInt();
+
+      System.out.print("请输入预约人姓名：");
+        String userName = scanner.next();
+
+        System.out.print("请输入预约日期，例如 2026-07-09：");
+        String date = scanner.next();
+
+        System.out.print("请输入预约时间段，例如 14:00-16:00：");
+        String timeSlot = scanner.next();
+
+        int newId = reservations.size() + 1;
+        Reservation reservation = new Reservation(newId, deviceId, userName, date, timeSlot);
+        reservations.add(reservation);
+
+        System.out.println("预约新增成功");
     }
 }
