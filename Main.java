@@ -32,7 +32,7 @@ public class Main {
                     showReservations(reservations);
                     break;
                 case 3:
-                    addReservation(scanner, reservations);
+                    addReservation(scanner, devices, reservations);
                     break;
                 case 0:
                     System.out.println("系统已退出");
@@ -64,11 +64,31 @@ public class Main {
         }
     }
 
-    public static void addReservation(Scanner scanner, ArrayList<Reservation> reservations) {
+    public static void addReservation(Scanner scanner, ArrayList<Device> devices, ArrayList<Reservation> reservations) {
         System.out.print("请输入设备编号：");
         int deviceId = scanner.nextInt();
 
-      System.out.print("请输入预约人姓名：");
+        Device selectedDevice = null;
+
+        for (Device device : devices) {
+            if (device.getId() == deviceId) {
+                selectedDevice = device;
+                break;
+            }
+        }
+
+        if (selectedDevice == null) {
+            System.out.println("设备不存在，预约失败");
+            return;
+        }
+
+        if (!selectedDevice.getStatus().equals("可预约")) {
+            System.out.println("该设备当前状态为：" + selectedDevice.getStatus());
+            System.out.println("设备不可预约，预约失败");
+            return;
+        }
+
+        System.out.print("请输入预约人姓名：");
         String userName = scanner.next();
 
         System.out.print("请输入预约日期，例如 2026-07-09：");
