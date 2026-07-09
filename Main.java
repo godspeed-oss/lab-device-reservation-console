@@ -68,14 +68,7 @@ public class Main {
         System.out.print("请输入设备编号：");
         int deviceId = scanner.nextInt();
 
-        Device selectedDevice = null;
-
-        for (Device device : devices) {
-            if (device.getId() == deviceId) {
-                selectedDevice = device;
-                break;
-            }
-        }
+        Device selectedDevice = findDeviceById(devices, deviceId);
 
         if (selectedDevice == null) {
             System.out.println("设备不存在，预约失败");
@@ -97,10 +90,37 @@ public class Main {
         System.out.print("请输入预约时间段，例如 14:00-16:00：");
         String timeSlot = scanner.next();
 
+        if (hasReservationConflict(reservations, deviceId, date, timeSlot)) {
+            System.out.println("该设备在这个日期和时间段已被预约，预约失败");
+            return;
+        }
+
         int newId = reservations.size() + 1;
         Reservation reservation = new Reservation(newId, deviceId, userName, date, timeSlot);
         reservations.add(reservation);
 
         System.out.println("预约新增成功");
+    }
+
+    public static Device findDeviceById(ArrayList<Device> devices, int deviceId) {
+        for (Device device : devices) {
+            if (device.getId() == deviceId) {
+                return device;
+            }
+        }
+
+        return null;
+    }
+
+    public static boolean hasReservationConflict(ArrayList<Reservation> reservations, int deviceId, String date, String timeSlot) {
+        for (Reservation reservation : reservations) {
+            if (reservation.getDeviceId() == deviceId
+                    && reservation.getDate().equals(date)
+                    && reservation.getTimeSlot().equals(timeSlot)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
