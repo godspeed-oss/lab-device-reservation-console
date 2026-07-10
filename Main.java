@@ -86,10 +86,13 @@ public class Main {
 
         System.out.print("请输入预约日期，例如 2026-07-09：");
         String date = scanner.next();
-
+        
         System.out.print("请输入预约时间段，例如 14:00-16:00：");
         String timeSlot = scanner.next();
-
+         if (!isValidTimeSlot(timeSlot)) {
+             System.out.println("时间段格式错误，预约失败");
+             return;
+         }
         if (hasReservationConflict(reservations, deviceId, date, timeSlot)) {
             System.out.println("该设备在这个日期和时间段已有预约冲突，预约失败");
             return;
@@ -137,10 +140,43 @@ public class Main {
     }
 
     public static int convertTimeToMinutes(String time) {
-        String[] parts = time.split(":");
-        int hour = Integer.parseInt(parts[0]);
-        int minute = Integer.parseInt(parts[1]);
-
-        return hour * 60 + minute;
+    if (!isValidTime(time)) {
+        throw new IllegalArgumentException("Invalid time format");
     }
+
+    String[] parts = time.split(":");
+    int hour = Integer.parseInt(parts[0]);
+    int minute = Integer.parseInt(parts[1]);
+
+    return hour * 60 + minute;
+}
+     public static boolean isValidTimeSlot(String timeSlot) {
+          String[] parts = timeSlot.split("-");
+
+          if (parts.length != 2) {
+              return false;
+    }
+
+         try {
+              int start = convertTimeToMinutes(parts[0]);
+              int end = convertTimeToMinutes(parts[1]);
+
+              return start < end;
+         } catch (Exception e) {
+              return false;
+    }
+}
+
+      public static boolean isValidTime(String time) {
+          String[] parts = time.split(":");
+
+          if (parts.length != 2) {
+              return false;
+    }
+
+    int hour = Integer.parseInt(parts[0]);
+    int minute = Integer.parseInt(parts[1]);
+
+    return hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59;
+}
 }
