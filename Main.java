@@ -21,6 +21,8 @@ public class Main {
             System.out.println("3. 新增预约");
             System.out.println("4. 查询指定设备预约记录");
             System.out.println("5. 删除预约记录");
+            System.out.println("6. 修改设备状态");
+            System.out.println("7. 按日期查询预约记录");
             System.out.println("0. 退出系统");
             System.out.print("请输入功能编号：");
 
@@ -41,6 +43,12 @@ public class Main {
                     break;
                 case 5:
                     deleteReservation(scanner, reservations);
+                    break;
+                case 6:
+                    updateDeviceStatus(scanner, devices);
+                    break;
+                case 7:
+                    searchReservationsByDate(scanner, reservations);
                     break;
                 case 0:
                     System.out.println("系统已退出");
@@ -156,6 +164,46 @@ public class Main {
 
         reservations.remove(targetReservation);
         System.out.println("预约记录删除成功");
+    }
+
+    public static void updateDeviceStatus(Scanner scanner, ArrayList<Device> devices) {
+        System.out.print("请输入要修改状态的设备编号：");
+        int deviceId = scanner.nextInt();
+
+        Device selectedDevice = findDeviceById(devices, deviceId);
+
+        if (selectedDevice == null) {
+            System.out.println("设备不存在，修改失败");
+            return;
+        }
+
+        System.out.println("当前设备状态：" + selectedDevice.getStatus());
+        System.out.print("请输入新的设备状态，例如 可预约 或 维修中：");
+        String newStatus = scanner.next();
+
+        selectedDevice.setStatus(newStatus);
+        System.out.println("设备状态修改成功");
+    }
+
+    public static void searchReservationsByDate(Scanner scanner, ArrayList<Reservation> reservations) {
+        System.out.print("请输入要查询的预约日期，例如 2026-07-09：");
+        String date = scanner.next();
+
+        boolean found = false;
+
+        System.out.println("查询结果：");
+        System.out.println("--------------------");
+
+        for (Reservation reservation : reservations) {
+            if (reservation.getDate().equals(date)) {
+                reservation.printInfo();
+                found = true;
+            }
+        }
+
+        if (!found) {
+            System.out.println("该日期暂无预约记录");
+        }
     }
 
     public static Device findDeviceById(ArrayList<Device> devices, int deviceId) {

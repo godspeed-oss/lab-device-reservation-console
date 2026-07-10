@@ -27,6 +27,10 @@ public class Device {
         return status;
     }
 
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     public void printInfo() {
         System.out.println("设备编号：" + id);
         System.out.println("设备名称：" + name);
