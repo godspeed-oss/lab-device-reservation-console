@@ -19,6 +19,8 @@ public class Main {
             System.out.println("1. 查看设备列表");
             System.out.println("2. 查看预约记录");
             System.out.println("3. 新增预约");
+            System.out.println("4. 查询指定设备预约记录");
+            System.out.println("5. 删除预约记录");
             System.out.println("0. 退出系统");
             System.out.print("请输入功能编号：");
 
@@ -33,6 +35,12 @@ public class Main {
                     break;
                 case 3:
                     addReservation(scanner, devices, reservations);
+                    break;
+                case 4:
+                    searchReservationsByDeviceId(scanner, reservations);
+                    break;
+                case 5:
+                    deleteReservation(scanner, reservations);
                     break;
                 case 0:
                     System.out.println("系统已退出");
@@ -86,13 +94,15 @@ public class Main {
 
         System.out.print("请输入预约日期，例如 2026-07-09：");
         String date = scanner.next();
-        
+
         System.out.print("请输入预约时间段，例如 14:00-16:00：");
         String timeSlot = scanner.next();
-         if (!isValidTimeSlot(timeSlot)) {
-             System.out.println("时间段格式错误，预约失败");
-             return;
-         }
+
+        if (!isValidTimeSlot(timeSlot)) {
+            System.out.println("时间段格式错误，预约失败");
+            return;
+        }
+
         if (hasReservationConflict(reservations, deviceId, date, timeSlot)) {
             System.out.println("该设备在这个日期和时间段已有预约冲突，预约失败");
             return;
@@ -103,6 +113,49 @@ public class Main {
         reservations.add(reservation);
 
         System.out.println("预约新增成功");
+    }
+
+    public static void searchReservationsByDeviceId(Scanner scanner, ArrayList<Reservation> reservations) {
+        System.out.print("请输入要查询的设备编号：");
+        int deviceId = scanner.nextInt();
+
+        boolean found = false;
+
+        System.out.println("查询结果：");
+        System.out.println("--------------------");
+
+        for (Reservation reservation : reservations) {
+            if (reservation.getDeviceId() == deviceId) {
+                reservation.printInfo();
+                found = true;
+            }
+        }
+
+        if (!found) {
+            System.out.println("该设备暂无预约记录");
+        }
+    }
+
+    public static void deleteReservation(Scanner scanner, ArrayList<Reservation> reservations) {
+        System.out.print("请输入要删除的预约编号：");
+        int reservationId = scanner.nextInt();
+
+        Reservation targetReservation = null;
+
+        for (Reservation reservation : reservations) {
+            if (reservation.getId() == reservationId) {
+                targetReservation = reservation;
+                break;
+            }
+        }
+
+        if (targetReservation == null) {
+            System.out.println("预约记录不存在，删除失败");
+            return;
+        }
+
+        reservations.remove(targetReservation);
+        System.out.println("预约记录删除成功");
     }
 
     public static Device findDeviceById(ArrayList<Device> devices, int deviceId) {
@@ -139,44 +192,45 @@ public class Main {
         return newStart < existingEnd && existingStart < newEnd;
     }
 
+    public static boolean isValidTimeSlot(String timeSlot) {
+        String[] parts = timeSlot.split("-");
+
+        if (parts.length != 2) {
+            return false;
+        }
+
+        try {
+            int start = convertTimeToMinutes(parts[0]);
+            int end = convertTimeToMinutes(parts[1]);
+
+            return start < end;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public static boolean isValidTime(String time) {
+        String[] parts = time.split(":");
+
+        if (parts.length != 2) {
+            return false;
+        }
+
+        int hour = Integer.parseInt(parts[0]);
+        int minute = Integer.parseInt(parts[1]);
+
+        return hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59;
+    }
+
     public static int convertTimeToMinutes(String time) {
-    if (!isValidTime(time)) {
-        throw new IllegalArgumentException("Invalid time format");
+        if (!isValidTime(time)) {
+            throw new IllegalArgumentException("Invalid time format");
+        }
+
+        String[] parts = time.split(":");
+        int hour = Integer.parseInt(parts[0]);
+        int minute = Integer.parseInt(parts[1]);
+
+        return hour * 60 + minute;
     }
-
-    String[] parts = time.split(":");
-    int hour = Integer.parseInt(parts[0]);
-    int minute = Integer.parseInt(parts[1]);
-
-    return hour * 60 + minute;
-}
-     public static boolean isValidTimeSlot(String timeSlot) {
-          String[] parts = timeSlot.split("-");
-
-          if (parts.length != 2) {
-              return false;
-    }
-
-         try {
-              int start = convertTimeToMinutes(parts[0]);
-              int end = convertTimeToMinutes(parts[1]);
-
-              return start < end;
-         } catch (Exception e) {
-              return false;
-    }
-}
-
-      public static boolean isValidTime(String time) {
-          String[] parts = time.split(":");
-
-          if (parts.length != 2) {
-              return false;
-    }
-
-    int hour = Integer.parseInt(parts[0]);
-    int minute = Integer.parseInt(parts[1]);
-
-    return hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59;
-}
 }
