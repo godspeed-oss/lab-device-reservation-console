@@ -91,7 +91,7 @@ public class Main {
         String timeSlot = scanner.next();
 
         if (hasReservationConflict(reservations, deviceId, date, timeSlot)) {
-            System.out.println("该设备在这个日期和时间段已被预约，预约失败");
+            System.out.println("该设备在这个日期和时间段已有预约冲突，预约失败");
             return;
         }
 
@@ -112,15 +112,35 @@ public class Main {
         return null;
     }
 
-    public static boolean hasReservationConflict(ArrayList<Reservation> reservations, int deviceId, String date, String timeSlot) {
+    public static boolean hasReservationConflict(ArrayList<Reservation> reservations, int deviceId, String date, String newTimeSlot) {
         for (Reservation reservation : reservations) {
-            if (reservation.getDeviceId() == deviceId
-                    && reservation.getDate().equals(date)
-                    && reservation.getTimeSlot().equals(timeSlot)) {
-                return true;
+            if (reservation.getDeviceId() == deviceId && reservation.getDate().equals(date)) {
+                if (isTimeOverlap(reservation.getTimeSlot(), newTimeSlot)) {
+                    return true;
+                }
             }
         }
 
         return false;
+    }
+
+    public static boolean isTimeOverlap(String existingTimeSlot, String newTimeSlot) {
+        String[] existingParts = existingTimeSlot.split("-");
+        String[] newParts = newTimeSlot.split("-");
+
+        int existingStart = convertTimeToMinutes(existingParts[0]);
+        int existingEnd = convertTimeToMinutes(existingParts[1]);
+        int newStart = convertTimeToMinutes(newParts[0]);
+        int newEnd = convertTimeToMinutes(newParts[1]);
+
+        return newStart < existingEnd && existingStart < newEnd;
+    }
+
+    public static int convertTimeToMinutes(String time) {
+        String[] parts = time.split(":");
+        int hour = Integer.parseInt(parts[0]);
+        int minute = Integer.parseInt(parts[1]);
+
+        return hour * 60 + minute;
     }
 }
