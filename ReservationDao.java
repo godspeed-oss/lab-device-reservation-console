@@ -1,5 +1,6 @@
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -40,5 +41,40 @@ public class ReservationDao {
         connection.close();
 
         return reservations;
+    }
+
+    public int insert(Reservation reservation) throws Exception {
+        String url = "jdbc:mysql://localhost:3306/lab_reservation_db?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf8";
+        String user = "root";
+
+        Connection connection = DriverManager.getConnection(url, user, password);
+
+        String[] timeParts = reservation.getTimeSlot().split("-");
+        String startTime = timeParts[0] + ":00";
+        String endTime = timeParts[1] + ":00";
+
+        String sql = "INSERT INTO reservation (device_id, user_name, reservation_date, start_time, end_time) VALUES (?, ?, ?, ?, ?)";
+        PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+
+        preparedStatement.setInt(1, reservation.getDeviceId());
+        preparedStatement.setString(2, reservation.getUserName());
+        preparedStatement.setString(3, reservation.getDate());
+        preparedStatement.setString(4, startTime);
+        preparedStatement.setString(5, endTime);
+
+        preparedStatement.executeUpdate();
+
+        ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+        int newId = 0;
+
+        if (generatedKeys.next()) {
+            newId = generatedKeys.getInt(1);
+        }
+
+        generatedKeys.close();
+        preparedStatement.close();
+        connection.close();
+
+        return newId;
     }
 }
