@@ -12,10 +12,10 @@ public class Main {
         String mysqlPassword = args[0];
 
         DeviceDao deviceDao = new DeviceDao(mysqlPassword);
-        ArrayList<Device> devices = deviceDao.findAll();
-        ArrayList<Reservation> reservations = new ArrayList<>();
+ReservationDao reservationDao = new ReservationDao(mysqlPassword);
 
-        reservations.add(new Reservation(1, 1, "张三", "2026-07-09", "09:00-11:00"));
+ArrayList<Device> devices = deviceDao.findAll();
+ArrayList<Reservation> reservations = reservationDao.findAll();
 
         Scanner scanner = new Scanner(System.in);
 
