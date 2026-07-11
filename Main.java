@@ -13,6 +13,7 @@ public class Main {
 
         DeviceDao deviceDao = new DeviceDao(mysqlPassword);
         ReservationDao reservationDao = new ReservationDao(mysqlPassword);
+        ReservationService reservationService = new ReservationService(reservationDao);
 
         ArrayList<Device> devices = deviceDao.findAll();
         ArrayList<Reservation> reservations = reservationDao.findAll();
@@ -41,16 +42,16 @@ public class Main {
                     showReservations(reservations);
                     break;
                 case 3:
-                    addReservation(scanner, devices, reservations, reservationDao);
+                    addReservation(scanner, devices, reservations, reservationService);
                     break;
                 case 4:
                     searchReservationsByDeviceId(scanner, reservationDao);
                     break;
                 case 5:
-                    deleteReservation(scanner, reservations, reservationDao);
+                    deleteReservation(scanner, reservations, reservationService);
                     break;
                 case 6:
-                    updateDeviceStatus(scanner, devices, deviceDao);
+                    updateDeviceStatus(scanner, devices, deviceDao, reservationService);
                     break;
                 case 7:
                     searchReservationsByDate(scanner, reservationDao);
@@ -85,22 +86,10 @@ public class Main {
         }
     }
 
-    public static void addReservation(Scanner scanner, ArrayList<Device> devices, ArrayList<Reservation> reservations, ReservationDao reservationDao) throws Exception {
+    public static void addReservation(Scanner scanner, ArrayList<Device> devices, ArrayList<Reservation> reservations,
+                                      ReservationService reservationService) throws Exception {
         System.out.print("请输入设备编号：");
         int deviceId = scanner.nextInt();
-
-        Device selectedDevice = findDeviceById(devices, deviceId);
-
-        if (selectedDevice == null) {
-            System.out.println("设备不存在，预约失败");
-            return;
-        }
-
-        if (!selectedDevice.getStatus().equals("可预约")) {
-            System.out.println("该设备当前状态为：" + selectedDevice.getStatus());
-            System.out.println("设备不可预约，预约失败");
-            return;
-        }
 
         System.out.print("请输入预约人姓名：");
         String userName = scanner.next();
@@ -111,23 +100,12 @@ public class Main {
         System.out.print("请输入预约时间段，例如 14:00-16:00：");
         String timeSlot = scanner.next();
 
-        if (!isValidTimeSlot(timeSlot)) {
-            System.out.println("时间段格式错误，预约失败");
-            return;
+        Reservation savedReservation = reservationService.addReservation(devices, reservations, deviceId, userName, date, timeSlot);
+
+        if (savedReservation != null) {
+            reservations.add(savedReservation);
+            System.out.println("预约新增成功");
         }
-
-        if (hasReservationConflict(reservations, deviceId, date, timeSlot)) {
-            System.out.println("该设备在这个日期和时间段已有预约冲突，预约失败");
-            return;
-        }
-
-        Reservation reservation = new Reservation(0, deviceId, userName, date, timeSlot);
-        int newId = reservationDao.insert(reservation);
-
-        Reservation savedReservation = new Reservation(newId, deviceId, userName, date, timeSlot);
-        reservations.add(savedReservation);
-
-        System.out.println("预约新增成功");
     }
 
     public static void searchReservationsByDeviceId(Scanner scanner, ReservationDao reservationDao) throws Exception {
@@ -149,35 +127,24 @@ public class Main {
         }
     }
 
-    public static void deleteReservation(Scanner scanner, ArrayList<Reservation> reservations, ReservationDao reservationDao) throws Exception {
+    public static void deleteReservation(Scanner scanner, ArrayList<Reservation> reservations,
+                                         ReservationService reservationService) throws Exception {
         System.out.print("请输入要删除的预约编号：");
         int reservationId = scanner.nextInt();
 
-        Reservation targetReservation = null;
+        boolean success = reservationService.deleteReservation(reservations, reservationId);
 
-        for (Reservation reservation : reservations) {
-            if (reservation.getId() == reservationId) {
-                targetReservation = reservation;
-                break;
-            }
+        if (success) {
+            System.out.println("预约记录删除成功");
         }
-
-        if (targetReservation == null) {
-            System.out.println("预约记录不存在，删除失败");
-            return;
-        }
-
-        reservationDao.deleteById(reservationId);
-        reservations.remove(targetReservation);
-
-        System.out.println("预约记录删除成功");
     }
 
-    public static void updateDeviceStatus(Scanner scanner, ArrayList<Device> devices, DeviceDao deviceDao) throws Exception {
+    public static void updateDeviceStatus(Scanner scanner, ArrayList<Device> devices, DeviceDao deviceDao,
+                                          ReservationService reservationService) throws Exception {
         System.out.print("请输入要修改状态的设备编号：");
         int deviceId = scanner.nextInt();
 
-        Device selectedDevice = findDeviceById(devices, deviceId);
+        Device selectedDevice = reservationService.findDeviceById(devices, deviceId);
 
         if (selectedDevice == null) {
             System.out.println("设备不存在，修改失败");
@@ -211,81 +178,5 @@ public class Main {
         for (Reservation reservation : result) {
             reservation.printInfo();
         }
-    }
-
-    public static Device findDeviceById(ArrayList<Device> devices, int deviceId) {
-        for (Device device : devices) {
-            if (device.getId() == deviceId) {
-                return device;
-            }
-        }
-
-        return null;
-    }
-
-    public static boolean hasReservationConflict(ArrayList<Reservation> reservations, int deviceId, String date, String newTimeSlot) {
-        for (Reservation reservation : reservations) {
-            if (reservation.getDeviceId() == deviceId && reservation.getDate().equals(date)) {
-                if (isTimeOverlap(reservation.getTimeSlot(), newTimeSlot)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    public static boolean isTimeOverlap(String existingTimeSlot, String newTimeSlot) {
-        String[] existingParts = existingTimeSlot.split("-");
-        String[] newParts = newTimeSlot.split("-");
-
-        int existingStart = convertTimeToMinutes(existingParts[0]);
-        int existingEnd = convertTimeToMinutes(existingParts[1]);
-        int newStart = convertTimeToMinutes(newParts[0]);
-        int newEnd = convertTimeToMinutes(newParts[1]);
-
-        return newStart < existingEnd && existingStart < newEnd;
-    }
-
-    public static boolean isValidTimeSlot(String timeSlot) {
-        String[] parts = timeSlot.split("-");
-
-        if (parts.length != 2) {
-            return false;
-        }
-
-        try {
-            int start = convertTimeToMinutes(parts[0]);
-            int end = convertTimeToMinutes(parts[1]);
-
-            return start < end;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    public static boolean isValidTime(String time) {
-        String[] parts = time.split(":");
-
-        if (parts.length != 2) {
-            return false;
-        }
-
-        int hour = Integer.parseInt(parts[0]);
-        int minute = Integer.parseInt(parts[1]);
-
-        return hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59;
-    }
-
-    public static int convertTimeToMinutes(String time) {
-        if (!isValidTime(time)) {
-            throw new IllegalArgumentException("Invalid time format");
-        }
-
-        String[] parts = time.split(":");
-        int hour = Integer.parseInt(parts[0]);
-        int minute = Integer.parseInt(parts[1]);
-
-        return hour * 60 + minute;
     }
 }
