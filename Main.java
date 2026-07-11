@@ -12,10 +12,10 @@ public class Main {
         String mysqlPassword = args[0];
 
         DeviceDao deviceDao = new DeviceDao(mysqlPassword);
-ReservationDao reservationDao = new ReservationDao(mysqlPassword);
+        ReservationDao reservationDao = new ReservationDao(mysqlPassword);
 
-ArrayList<Device> devices = deviceDao.findAll();
-ArrayList<Reservation> reservations = reservationDao.findAll();
+        ArrayList<Device> devices = deviceDao.findAll();
+        ArrayList<Reservation> reservations = reservationDao.findAll();
 
         Scanner scanner = new Scanner(System.in);
 
@@ -44,16 +44,16 @@ ArrayList<Reservation> reservations = reservationDao.findAll();
                     addReservation(scanner, devices, reservations, reservationDao);
                     break;
                 case 4:
-                    searchReservationsByDeviceId(scanner, reservations);
+                    searchReservationsByDeviceId(scanner, reservationDao);
                     break;
                 case 5:
-                    deleteReservation(scanner, reservations);
+                    deleteReservation(scanner, reservations, reservationDao);
                     break;
                 case 6:
                     updateDeviceStatus(scanner, devices, deviceDao);
                     break;
                 case 7:
-                    searchReservationsByDate(scanner, reservations);
+                    searchReservationsByDate(scanner, reservationDao);
                     break;
                 case 0:
                     System.out.println("系统已退出");
@@ -86,72 +86,70 @@ ArrayList<Reservation> reservations = reservationDao.findAll();
     }
 
     public static void addReservation(Scanner scanner, ArrayList<Device> devices, ArrayList<Reservation> reservations, ReservationDao reservationDao) throws Exception {
-    System.out.print("请输入设备编号：");
-    int deviceId = scanner.nextInt();
+        System.out.print("请输入设备编号：");
+        int deviceId = scanner.nextInt();
 
-    Device selectedDevice = findDeviceById(devices, deviceId);
+        Device selectedDevice = findDeviceById(devices, deviceId);
 
-    if (selectedDevice == null) {
-        System.out.println("设备不存在，预约失败");
-        return;
+        if (selectedDevice == null) {
+            System.out.println("设备不存在，预约失败");
+            return;
+        }
+
+        if (!selectedDevice.getStatus().equals("可预约")) {
+            System.out.println("该设备当前状态为：" + selectedDevice.getStatus());
+            System.out.println("设备不可预约，预约失败");
+            return;
+        }
+
+        System.out.print("请输入预约人姓名：");
+        String userName = scanner.next();
+
+        System.out.print("请输入预约日期，例如 2026-07-09：");
+        String date = scanner.next();
+
+        System.out.print("请输入预约时间段，例如 14:00-16:00：");
+        String timeSlot = scanner.next();
+
+        if (!isValidTimeSlot(timeSlot)) {
+            System.out.println("时间段格式错误，预约失败");
+            return;
+        }
+
+        if (hasReservationConflict(reservations, deviceId, date, timeSlot)) {
+            System.out.println("该设备在这个日期和时间段已有预约冲突，预约失败");
+            return;
+        }
+
+        Reservation reservation = new Reservation(0, deviceId, userName, date, timeSlot);
+        int newId = reservationDao.insert(reservation);
+
+        Reservation savedReservation = new Reservation(newId, deviceId, userName, date, timeSlot);
+        reservations.add(savedReservation);
+
+        System.out.println("预约新增成功");
     }
 
-    if (!selectedDevice.getStatus().equals("可预约")) {
-        System.out.println("该设备当前状态为：" + selectedDevice.getStatus());
-        System.out.println("设备不可预约，预约失败");
-        return;
-    }
-
-    System.out.print("请输入预约人姓名：");
-    String userName = scanner.next();
-
-    System.out.print("请输入预约日期，例如 2026-07-09：");
-    String date = scanner.next();
-
-    System.out.print("请输入预约时间段，例如 14:00-16:00：");
-    String timeSlot = scanner.next();
-
-    if (!isValidTimeSlot(timeSlot)) {
-        System.out.println("时间段格式错误，预约失败");
-        return;
-    }
-
-    if (hasReservationConflict(reservations, deviceId, date, timeSlot)) {
-        System.out.println("该设备在这个日期和时间段已有预约冲突，预约失败");
-        return;
-    }
-
-    Reservation reservation = new Reservation(0, deviceId, userName, date, timeSlot);
-    int newId = reservationDao.insert(reservation);
-
-    Reservation savedReservation = new Reservation(newId, deviceId, userName, date, timeSlot);
-    reservations.add(savedReservation);
-
-    System.out.println("预约新增成功");
-}
-
-    public static void searchReservationsByDeviceId(Scanner scanner, ArrayList<Reservation> reservations) {
+    public static void searchReservationsByDeviceId(Scanner scanner, ReservationDao reservationDao) throws Exception {
         System.out.print("请输入要查询的设备编号：");
         int deviceId = scanner.nextInt();
 
-        boolean found = false;
+        ArrayList<Reservation> result = reservationDao.findByDeviceId(deviceId);
 
         System.out.println("查询结果：");
         System.out.println("--------------------");
 
-        for (Reservation reservation : reservations) {
-            if (reservation.getDeviceId() == deviceId) {
-                reservation.printInfo();
-                found = true;
-            }
+        if (result.isEmpty()) {
+            System.out.println("该设备暂无预约记录");
+            return;
         }
 
-        if (!found) {
-            System.out.println("该设备暂无预约记录");
+        for (Reservation reservation : result) {
+            reservation.printInfo();
         }
     }
 
-    public static void deleteReservation(Scanner scanner, ArrayList<Reservation> reservations) {
+    public static void deleteReservation(Scanner scanner, ArrayList<Reservation> reservations, ReservationDao reservationDao) throws Exception {
         System.out.print("请输入要删除的预约编号：");
         int reservationId = scanner.nextInt();
 
@@ -169,49 +167,49 @@ ArrayList<Reservation> reservations = reservationDao.findAll();
             return;
         }
 
+        reservationDao.deleteById(reservationId);
         reservations.remove(targetReservation);
+
         System.out.println("预约记录删除成功");
     }
 
     public static void updateDeviceStatus(Scanner scanner, ArrayList<Device> devices, DeviceDao deviceDao) throws Exception {
-    System.out.print("请输入要修改状态的设备编号：");
-    int deviceId = scanner.nextInt();
+        System.out.print("请输入要修改状态的设备编号：");
+        int deviceId = scanner.nextInt();
 
-    Device selectedDevice = findDeviceById(devices, deviceId);
+        Device selectedDevice = findDeviceById(devices, deviceId);
 
-    if (selectedDevice == null) {
-        System.out.println("设备不存在，修改失败");
-        return;
+        if (selectedDevice == null) {
+            System.out.println("设备不存在，修改失败");
+            return;
+        }
+
+        System.out.println("当前设备状态：" + selectedDevice.getStatus());
+        System.out.print("请输入新的设备状态，例如 可预约 或 维修中：");
+        String newStatus = scanner.next();
+
+        deviceDao.updateStatus(deviceId, newStatus);
+        selectedDevice.setStatus(newStatus);
+
+        System.out.println("设备状态修改成功");
     }
 
-    System.out.println("当前设备状态：" + selectedDevice.getStatus());
-    System.out.print("请输入新的设备状态，例如 可预约 或 维修中：");
-    String newStatus = scanner.next();
-
-    deviceDao.updateStatus(deviceId, newStatus);
-    selectedDevice.setStatus(newStatus);
-
-    System.out.println("设备状态修改成功");
-}
-
-    public static void searchReservationsByDate(Scanner scanner, ArrayList<Reservation> reservations) {
+    public static void searchReservationsByDate(Scanner scanner, ReservationDao reservationDao) throws Exception {
         System.out.print("请输入要查询的预约日期，例如 2026-07-09：");
         String date = scanner.next();
 
-        boolean found = false;
+        ArrayList<Reservation> result = reservationDao.findByDate(date);
 
         System.out.println("查询结果：");
         System.out.println("--------------------");
 
-        for (Reservation reservation : reservations) {
-            if (reservation.getDate().equals(date)) {
-                reservation.printInfo();
-                found = true;
-            }
+        if (result.isEmpty()) {
+            System.out.println("该日期暂无预约记录");
+            return;
         }
 
-        if (!found) {
-            System.out.println("该日期暂无预约记录");
+        for (Reservation reservation : result) {
+            reservation.printInfo();
         }
     }
 

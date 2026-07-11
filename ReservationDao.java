@@ -19,21 +19,58 @@ public class ReservationDao {
         ResultSet resultSet = statement.executeQuery("SELECT * FROM reservation");
 
         while (resultSet.next()) {
-            int id = resultSet.getInt("id");
-            int deviceId = resultSet.getInt("device_id");
-            String userName = resultSet.getString("user_name");
-            String date = resultSet.getDate("reservation_date").toString();
-
-            String startTime = resultSet.getTime("start_time").toString().substring(0, 5);
-            String endTime = resultSet.getTime("end_time").toString().substring(0, 5);
-            String timeSlot = startTime + "-" + endTime;
-
-            Reservation reservation = new Reservation(id, deviceId, userName, date, timeSlot);
+            Reservation reservation = createReservationFromResultSet(resultSet);
             reservations.add(reservation);
         }
 
         resultSet.close();
         statement.close();
+        connection.close();
+
+        return reservations;
+    }
+
+    public ArrayList<Reservation> findByDeviceId(int deviceId) throws Exception {
+        ArrayList<Reservation> reservations = new ArrayList<>();
+
+        Connection connection = DbUtil.getConnection(password);
+
+        String sql = "SELECT * FROM reservation WHERE device_id = ?";
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setInt(1, deviceId);
+
+        ResultSet resultSet = preparedStatement.executeQuery();
+
+        while (resultSet.next()) {
+            Reservation reservation = createReservationFromResultSet(resultSet);
+            reservations.add(reservation);
+        }
+
+        resultSet.close();
+        preparedStatement.close();
+        connection.close();
+
+        return reservations;
+    }
+
+    public ArrayList<Reservation> findByDate(String date) throws Exception {
+        ArrayList<Reservation> reservations = new ArrayList<>();
+
+        Connection connection = DbUtil.getConnection(password);
+
+        String sql = "SELECT * FROM reservation WHERE reservation_date = ?";
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setString(1, date);
+
+        ResultSet resultSet = preparedStatement.executeQuery();
+
+        while (resultSet.next()) {
+            Reservation reservation = createReservationFromResultSet(resultSet);
+            reservations.add(reservation);
+        }
+
+        resultSet.close();
+        preparedStatement.close();
         connection.close();
 
         return reservations;
@@ -85,5 +122,18 @@ public class ReservationDao {
 
         preparedStatement.close();
         connection.close();
+    }
+
+    private Reservation createReservationFromResultSet(ResultSet resultSet) throws Exception {
+        int id = resultSet.getInt("id");
+        int deviceId = resultSet.getInt("device_id");
+        String userName = resultSet.getString("user_name");
+        String date = resultSet.getDate("reservation_date").toString();
+
+        String startTime = resultSet.getTime("start_time").toString().substring(0, 5);
+        String endTime = resultSet.getTime("end_time").toString().substring(0, 5);
+        String timeSlot = startTime + "-" + endTime;
+
+        return new Reservation(id, deviceId, userName, date, timeSlot);
     }
 }
