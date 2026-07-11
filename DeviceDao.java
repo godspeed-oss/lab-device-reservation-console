@@ -1,5 +1,4 @@
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -15,10 +14,7 @@ public class DeviceDao {
     public ArrayList<Device> findAll() throws Exception {
         ArrayList<Device> devices = new ArrayList<>();
 
-        String url = "jdbc:mysql://localhost:3306/lab_reservation_db?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf8";
-        String user = "root";
-
-        Connection connection = DriverManager.getConnection(url, user, password);
+        Connection connection = DbUtil.getConnection(password);
         Statement statement = connection.createStatement();
         ResultSet resultSet = statement.executeQuery("SELECT * FROM device");
 
@@ -40,10 +36,7 @@ public class DeviceDao {
     }
 
     public void updateStatus(int deviceId, String newStatus) throws Exception {
-        String url = "jdbc:mysql://localhost:3306/lab_reservation_db?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf8";
-        String user = "root";
-
-        Connection connection = DriverManager.getConnection(url, user, password);
+        Connection connection = DbUtil.getConnection(password);
 
         String sql = "UPDATE device SET status = ? WHERE id = ?";
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
