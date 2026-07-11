@@ -2,13 +2,18 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) {
-        ArrayList<Device> devices = new ArrayList<>();
-        ArrayList<Reservation> reservations = new ArrayList<>();
+    public static void main(String[] args) throws Exception {
+        if (args.length < 1) {
+            System.out.println("请在运行时传入 MySQL 密码");
+            System.out.println("示例：java -cp \".;lib\\mysql-connector-j-9.7.0.jar\" Main your_password");
+            return;
+        }
 
-        devices.add(new Device(1, "显微镜", "光学设备", "可预约"));
-        devices.add(new Device(2, "3D打印机", "制造设备", "维修中"));
-        devices.add(new Device(3, "高速离心机", "实验设备", "可预约"));
+        String mysqlPassword = args[0];
+
+        DeviceDao deviceDao = new DeviceDao(mysqlPassword);
+        ArrayList<Device> devices = deviceDao.findAll();
+        ArrayList<Reservation> reservations = new ArrayList<>();
 
         reservations.add(new Reservation(1, 1, "张三", "2026-07-09", "09:00-11:00"));
 
