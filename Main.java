@@ -50,7 +50,7 @@ public class Main {
                     deleteReservation(scanner, reservations);
                     break;
                 case 6:
-                    updateDeviceStatus(scanner, devices);
+                    updateDeviceStatus(scanner, devices, deviceDao);
                     break;
                 case 7:
                     searchReservationsByDate(scanner, reservations);
@@ -171,24 +171,26 @@ public class Main {
         System.out.println("预约记录删除成功");
     }
 
-    public static void updateDeviceStatus(Scanner scanner, ArrayList<Device> devices) {
-        System.out.print("请输入要修改状态的设备编号：");
-        int deviceId = scanner.nextInt();
+    public static void updateDeviceStatus(Scanner scanner, ArrayList<Device> devices, DeviceDao deviceDao) throws Exception {
+    System.out.print("请输入要修改状态的设备编号：");
+    int deviceId = scanner.nextInt();
 
-        Device selectedDevice = findDeviceById(devices, deviceId);
+    Device selectedDevice = findDeviceById(devices, deviceId);
 
-        if (selectedDevice == null) {
-            System.out.println("设备不存在，修改失败");
-            return;
-        }
-
-        System.out.println("当前设备状态：" + selectedDevice.getStatus());
-        System.out.print("请输入新的设备状态，例如 可预约 或 维修中：");
-        String newStatus = scanner.next();
-
-        selectedDevice.setStatus(newStatus);
-        System.out.println("设备状态修改成功");
+    if (selectedDevice == null) {
+        System.out.println("设备不存在，修改失败");
+        return;
     }
+
+    System.out.println("当前设备状态：" + selectedDevice.getStatus());
+    System.out.print("请输入新的设备状态，例如 可预约 或 维修中：");
+    String newStatus = scanner.next();
+
+    deviceDao.updateStatus(deviceId, newStatus);
+    selectedDevice.setStatus(newStatus);
+
+    System.out.println("设备状态修改成功");
+}
 
     public static void searchReservationsByDate(Scanner scanner, ArrayList<Reservation> reservations) {
         System.out.print("请输入要查询的预约日期，例如 2026-07-09：");
