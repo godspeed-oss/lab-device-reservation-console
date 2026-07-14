@@ -11,6 +11,19 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
+    private static int readInt(Scanner scanner, String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine();
+
+            try {
+                return Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                System.out.println("请输入数字");
+            }
+        }
+    }
+
     public static void main(String[] args) throws Exception {
         DeviceDao deviceDao = new DeviceDao();
         ReservationDao reservationDao = new ReservationDao();
@@ -28,10 +41,8 @@ public class Main {
             System.out.println("6. 修改设备状态");
             System.out.println("7. 按日期查询预约记录");
             System.out.println("0. 退出系统");
-            System.out.print("请输入功能编号：");
 
-            int choice = scanner.nextInt();
-            scanner.nextLine();
+            int choice = readInt(scanner, "请输入功能编号：");
 
             if (choice == 0) {
                 System.out.println("系统已退出");
@@ -96,9 +107,7 @@ public class Main {
     }
 
     private static void addReservation(Scanner scanner, DeviceService deviceService, ReservationService reservationService) throws Exception {
-        System.out.print("请输入设备编号：");
-        int deviceId = scanner.nextInt();
-        scanner.nextLine();
+        int deviceId = readInt(scanner, "请输入设备编号：");
 
         Device device = deviceService.findDeviceById(deviceId);
 
@@ -124,18 +133,14 @@ public class Main {
     }
 
     private static void findReservationsByDevice(Scanner scanner, ReservationService reservationService) throws Exception {
-        System.out.print("请输入设备编号：");
-        int deviceId = scanner.nextInt();
-        scanner.nextLine();
+        int deviceId = readInt(scanner, "请输入设备编号：");
 
         ArrayList<Reservation> reservations = reservationService.findReservationsByDeviceId(deviceId);
         showReservations(reservations);
     }
 
     private static void deleteReservation(Scanner scanner, ReservationService reservationService) throws Exception {
-        System.out.print("请输入要删除的预约编号：");
-        int reservationId = scanner.nextInt();
-        scanner.nextLine();
+        int reservationId = readInt(scanner, "请输入要删除的预约编号：");
 
         boolean success = reservationService.deleteReservation(reservationId);
 
@@ -147,9 +152,7 @@ public class Main {
     }
 
     private static void updateDeviceStatus(Scanner scanner, DeviceService deviceService) throws Exception {
-        System.out.print("请输入设备编号：");
-        int deviceId = scanner.nextInt();
-        scanner.nextLine();
+        int deviceId = readInt(scanner, "请输入设备编号：");
 
         System.out.print("请输入新的设备状态，例如 可预约 / 维修中：");
         String status = scanner.nextLine();
