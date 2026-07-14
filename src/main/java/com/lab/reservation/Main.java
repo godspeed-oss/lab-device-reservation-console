@@ -104,6 +104,7 @@ public class Main {
             System.out.println("8. 按设备名称搜索设备");
             System.out.println("9. 新增设备");
             System.out.println("10. 删除设备");
+            System.out.println("11. 修改设备信息");
             System.out.println("0. 退出系统");
 
             int choice = readInt(scanner, "请输入功能编号：");
@@ -144,6 +145,9 @@ public class Main {
                         break;
                     case 10:
                         deleteDevice(scanner, deviceService);
+                        break;
+                    case 11:
+                        updateDevice(scanner, deviceService);
                         break;
                     default:
                         System.out.println("功能编号不存在，请重新输入");
@@ -279,6 +283,22 @@ public class Main {
             System.out.println("设备删除成功");
         } else {
             System.out.println("设备删除失败");
+        }
+    }
+
+    private static void updateDevice(Scanner scanner, DeviceService deviceService) throws Exception {
+        int deviceId = readInt(scanner, "请输入要修改的设备编号：");
+
+        String name = readRequiredText(scanner, "请输入新的设备名称：");
+        String type = readRequiredText(scanner, "请输入新的设备类型：");
+        String status = readDeviceStatus(scanner);
+
+        boolean success = deviceService.updateDevice(deviceId, name, type, status);
+
+        if (success) {
+            System.out.println("设备信息修改成功");
+        } else {
+            System.out.println("设备信息修改失败");
         }
     }
 

@@ -96,6 +96,23 @@ public class DeviceDao {
         }
     }
 
+    public boolean update(Device device) throws Exception {
+        String sql = "UPDATE device SET name = ?, type = ?, status = ? WHERE id = ?";
+
+        try (
+                Connection connection = DbUtil.getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)
+        ) {
+            preparedStatement.setString(1, device.getName());
+            preparedStatement.setString(2, device.getType());
+            preparedStatement.setString(3, device.getStatus());
+            preparedStatement.setInt(4, device.getId());
+
+            int affectedRows = preparedStatement.executeUpdate();
+            return affectedRows > 0;
+        }
+    }
+
     public boolean updateStatus(int id, String status) throws Exception {
         String sql = "UPDATE device SET status = ? WHERE id = ?";
 

@@ -37,6 +37,22 @@ public class DeviceService {
         return deviceDao.add(device);
     }
 
+    public boolean updateDevice(int deviceId, String name, String type, String status) throws Exception {
+        if (!isValidStatus(status)) {
+            System.out.println("设备状态不合法，只能输入：可预约 / 维修中 / 停用");
+            return false;
+        }
+
+        Device oldDevice = deviceDao.findById(deviceId);
+        if (oldDevice == null) {
+            System.out.println("设备不存在，修改失败");
+            return false;
+        }
+
+        Device newDevice = new Device(deviceId, name, type, status);
+        return deviceDao.update(newDevice);
+    }
+
     public boolean updateDeviceStatus(int deviceId, String status) throws Exception {
         if (!isValidStatus(status)) {
             System.out.println("设备状态不合法，只能输入：可预约 / 维修中 / 停用");
