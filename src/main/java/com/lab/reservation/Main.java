@@ -50,8 +50,8 @@ public class Main {
                     findReservationsByDevice(scanner, reservationDao);
                     break;
                 case 5:
-                    deleteReservation(scanner, reservationDao);
-                    break;
+    deleteReservation(scanner, reservationService);
+    break;
                 case 6:
                     updateDeviceStatus(scanner, deviceDao);
                     break;
@@ -130,19 +130,19 @@ public class Main {
         showReservations(reservations);
     }
 
-    private static void deleteReservation(Scanner scanner, ReservationDao reservationDao) throws Exception {
-        System.out.print("请输入要删除的预约编号：");
-        int reservationId = scanner.nextInt();
-        scanner.nextLine();
+   private static void deleteReservation(Scanner scanner, ReservationService reservationService) throws Exception {
+    System.out.print("请输入要删除的预约编号：");
+    int reservationId = scanner.nextInt();
+    scanner.nextLine();
 
-        boolean success = reservationDao.deleteById(reservationId);
+    boolean success = reservationService.deleteReservation(reservationId);
 
-        if (success) {
-            System.out.println("预约删除成功");
-        } else {
-            System.out.println("预约不存在，删除失败");
-        }
+    if (success) {
+        System.out.println("预约删除成功");
+    } else {
+        System.out.println("预约不存在，删除失败");
     }
+}
 
     private static void updateDeviceStatus(Scanner scanner, DeviceDao deviceDao) throws Exception {
         System.out.print("请输入设备编号：");

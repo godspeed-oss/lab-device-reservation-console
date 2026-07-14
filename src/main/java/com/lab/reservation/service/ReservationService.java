@@ -39,6 +39,10 @@ public class ReservationService {
         return reservationDao.add(reservation);
     }
 
+public boolean deleteReservation(int reservationId) throws Exception {
+    return reservationDao.deleteById(reservationId);
+}
+
     private boolean isValidTimeRange(String startTime, String endTime) {
         try {
             LocalTime start = LocalTime.parse(startTime);
