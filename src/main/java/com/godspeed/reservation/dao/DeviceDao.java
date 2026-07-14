@@ -11,47 +11,67 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 public class DeviceDao {
-    private String password;
-
-    public DeviceDao(String password) {
-        this.password = password;
-    }
 
     public ArrayList<Device> findAll() throws Exception {
         ArrayList<Device> devices = new ArrayList<>();
 
-        Connection connection = DbUtil.getConnection(password);
-        Statement statement = connection.createStatement();
-        ResultSet resultSet = statement.executeQuery("SELECT * FROM device");
+        String sql = "SELECT id, name, type, status FROM device";
 
-        while (resultSet.next()) {
-            int id = resultSet.getInt("id");
-            String name = resultSet.getString("name");
-            String type = resultSet.getString("type");
-            String status = resultSet.getString("status");
-
-            Device device = new Device(id, name, type, status);
-            devices.add(device);
+        try (
+                Connection connection = DbUtil.getConnection();
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(sql)
+        ) {
+            while (resultSet.next()) {
+                Device device = new Device(
+                        resultSet.getInt("id"),
+                        resultSet.getString("name"),
+                        resultSet.getString("type"),
+                        resultSet.getString("status")
+                );
+                devices.add(device);
+            }
         }
-
-        resultSet.close();
-        statement.close();
-        connection.close();
 
         return devices;
     }
 
-    public void updateStatus(int deviceId, String newStatus) throws Exception {
-        Connection connection = DbUtil.getConnection(password);
+    public Device findById(int id) throws Exception {
+        String sql = "SELECT id, name, type, status FROM device WHERE id = ?";
 
+        try (
+                Connection connection = DbUtil.getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)
+        ) {
+            preparedStatement.setInt(1, id);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return new Device(
+                            resultSet.getInt("id"),
+                            resultSet.getString("name"),
+                            resultSet.getString("type"),
+                            resultSet.getString("status")
+                    );
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public boolean updateStatus(int id, String status) throws Exception {
         String sql = "UPDATE device SET status = ? WHERE id = ?";
-        PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        preparedStatement.setString(1, newStatus);
-        preparedStatement.setInt(2, deviceId);
 
-        preparedStatement.executeUpdate();
+        try (
+                Connection connection = DbUtil.getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)
+        ) {
+            preparedStatement.setString(1, status);
+            preparedStatement.setInt(2, id);
 
-        preparedStatement.close();
-        connection.close();
+            int affectedRows = preparedStatement.executeUpdate();
+            return affectedRows > 0;
+        }
     }
 }

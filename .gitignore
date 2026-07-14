@@ -3,3 +3,4 @@ target/
 lib/
 .idea/
 *.iml
+src/main/resources/db.properties
