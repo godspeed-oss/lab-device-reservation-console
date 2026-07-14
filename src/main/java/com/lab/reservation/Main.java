@@ -26,6 +26,19 @@ public class Main {
         }
     }
 
+    private static String readRequiredText(Scanner scanner, String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine().trim();
+
+            if (!input.isEmpty()) {
+                return input;
+            }
+
+            System.out.println("输入内容不能为空");
+        }
+    }
+
     private static String readDate(Scanner scanner, String prompt) {
         while (true) {
             System.out.print(prompt);
@@ -159,8 +172,7 @@ public class Main {
 
         Device device = deviceService.findDeviceById(deviceId);
 
-        System.out.print("请输入预约人姓名：");
-        String userName = scanner.nextLine();
+        String userName = readRequiredText(scanner, "请输入预约人姓名：");
 
         String reservationDate = readDate(scanner, "请输入预约日期，例如 2026-07-09：");
 
