@@ -14,6 +14,10 @@ public class ReservationService {
         this.reservationDao = reservationDao;
     }
 
+    public ArrayList<Reservation> findAllReservations() throws Exception {
+        return reservationDao.findAll();
+    }
+
     public boolean addReservation(Device device, int deviceId, String userName, String reservationDate, String startTime, String endTime) throws Exception {
         if (device == null) {
             System.out.println("设备不存在，无法预约");
@@ -39,21 +43,17 @@ public class ReservationService {
         return reservationDao.add(reservation);
     }
 
-public ArrayList<Reservation> findAllReservations() throws Exception {
-    return reservationDao.findAll();
-}
+    public boolean deleteReservation(int reservationId) throws Exception {
+        return reservationDao.deleteById(reservationId);
+    }
 
-public boolean deleteReservation(int reservationId) throws Exception {
-    return reservationDao.deleteById(reservationId);
-}
+    public ArrayList<Reservation> findReservationsByDeviceId(int deviceId) throws Exception {
+        return reservationDao.findByDeviceId(deviceId);
+    }
 
-public ArrayList<Reservation> findReservationsByDeviceId(int deviceId) throws Exception {
-    return reservationDao.findByDeviceId(deviceId);
-}
-
-public ArrayList<Reservation> findReservationsByDate(String reservationDate) throws Exception {
-    return reservationDao.findByDate(reservationDate);
-}
+    public ArrayList<Reservation> findReservationsByDate(String reservationDate) throws Exception {
+        return reservationDao.findByDate(reservationDate);
+    }
 
     private boolean isValidTimeRange(String startTime, String endTime) {
         try {
