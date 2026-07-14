@@ -1,8 +1,8 @@
-package com.godspeed.reservation.service;
+package com.lab.reservation.service;
 
-import com.godspeed.reservation.dao.ReservationDao;
-import com.godspeed.reservation.entity.Device;
-import com.godspeed.reservation.entity.Reservation;
+import com.lab.reservation.dao.ReservationDao;
+import com.lab.reservation.entity.Device;
+import com.lab.reservation.entity.Reservation;
 
 import java.time.LocalTime;
 import java.util.ArrayList;

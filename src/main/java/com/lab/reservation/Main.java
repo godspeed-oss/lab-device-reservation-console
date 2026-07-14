@@ -1,21 +1,21 @@
-package com.godspeed.reservation;
+package com.lab.reservation;
 
-import com.godspeed.reservation.dao.DeviceDao;
-import com.godspeed.reservation.dao.ReservationDao;
-import com.godspeed.reservation.entity.Device;
-import com.godspeed.reservation.entity.Reservation;
-import com.godspeed.reservation.service.ReservationService;
+import com.lab.reservation.dao.DeviceDao;
+import com.lab.reservation.dao.ReservationDao;
+import com.lab.reservation.entity.Device;
+import com.lab.reservation.entity.Reservation;
+import com.lab.reservation.service.ReservationService;
 
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-       DeviceDao deviceDao = new DeviceDao();
-ReservationDao reservationDao = new ReservationDao();
-ReservationService reservationService = new ReservationService(reservationDao);
-Scanner scanner = new Scanner(System.in);
+        DeviceDao deviceDao = new DeviceDao();
+        ReservationDao reservationDao = new ReservationDao();
+        ReservationService reservationService = new ReservationService(reservationDao);
+        Scanner scanner = new Scanner(System.in);
+
         while (true) {
             System.out.println("实验室设备预约系统");
             System.out.println("1. 查看设备列表");
@@ -44,8 +44,8 @@ Scanner scanner = new Scanner(System.in);
                     showReservations(reservationDao.findAll());
                     break;
                 case 3:
-    addReservation(scanner, deviceDao, reservationService);
-    break;
+                    addReservation(scanner, deviceDao, reservationService);
+                    break;
                 case 4:
                     findReservationsByDevice(scanner, reservationDao);
                     break;
@@ -93,33 +93,34 @@ Scanner scanner = new Scanner(System.in);
         }
     }
 
-   private static void addReservation(Scanner scanner, DeviceDao deviceDao, ReservationService reservationService) throws Exception {
-    System.out.print("请输入设备编号：");
-    int deviceId = scanner.nextInt();
-    scanner.nextLine();
+    private static void addReservation(Scanner scanner, DeviceDao deviceDao, ReservationService reservationService) throws Exception {
+        System.out.print("请输入设备编号：");
+        int deviceId = scanner.nextInt();
+        scanner.nextLine();
 
-    Device device = deviceDao.findById(deviceId);
+        Device device = deviceDao.findById(deviceId);
 
-    System.out.print("请输入预约人姓名：");
-    String userName = scanner.nextLine();
+        System.out.print("请输入预约人姓名：");
+        String userName = scanner.nextLine();
 
-    System.out.print("请输入预约日期，例如 2026-07-09：");
-    String reservationDate = scanner.nextLine();
+        System.out.print("请输入预约日期，例如 2026-07-09：");
+        String reservationDate = scanner.nextLine();
 
-    System.out.print("请输入开始时间，例如 09:00：");
-    String startTime = scanner.nextLine();
+        System.out.print("请输入开始时间，例如 09:00：");
+        String startTime = scanner.nextLine();
 
-    System.out.print("请输入结束时间，例如 11:00：");
-    String endTime = scanner.nextLine();
+        System.out.print("请输入结束时间，例如 11:00：");
+        String endTime = scanner.nextLine();
 
-    boolean success = reservationService.addReservation(device, deviceId, userName, reservationDate, startTime, endTime);
+        boolean success = reservationService.addReservation(device, deviceId, userName, reservationDate, startTime, endTime);
 
-    if (success) {
-        System.out.println("预约新增成功");
-    } else {
-        System.out.println("预约新增失败");
+        if (success) {
+            System.out.println("预约新增成功");
+        } else {
+            System.out.println("预约新增失败");
+        }
     }
-}
+
     private static void findReservationsByDevice(Scanner scanner, ReservationDao reservationDao) throws Exception {
         System.out.print("请输入设备编号：");
         int deviceId = scanner.nextInt();
@@ -168,7 +169,7 @@ Scanner scanner = new Scanner(System.in);
         showReservations(reservations);
     }
 
-       private static void printDevice(Device device) {
+    private static void printDevice(Device device) {
         System.out.println("设备编号：" + device.getId());
         System.out.println("设备名称：" + device.getName());
         System.out.println("设备类型：" + device.getType());

@@ -1,4 +1,4 @@
-package com.godspeed.reservation.util;
+package com.lab.reservation.util;
 
 import java.io.InputStream;
 import java.sql.Connection;

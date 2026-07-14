@@ -1,7 +1,7 @@
-package com.godspeed.reservation.dao;
+package com.lab.reservation.dao;
 
-import com.godspeed.reservation.entity.Reservation;
-import com.godspeed.reservation.util.DbUtil;
+import com.lab.reservation.entity.Reservation;
+import com.lab.reservation.util.DbUtil;
 
 import java.sql.Connection;
 import java.sql.Date;

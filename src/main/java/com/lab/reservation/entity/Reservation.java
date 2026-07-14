@@ -1,4 +1,4 @@
-package com.godspeed.reservation.entity;
+package com.lab.reservation.entity;
 
 public class Reservation {
     private int id;

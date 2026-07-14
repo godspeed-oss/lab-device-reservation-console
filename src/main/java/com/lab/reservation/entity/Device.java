@@ -1,4 +1,5 @@
-package com.godspeed.reservation.entity;
+package com.lab.reservation.entity;
+
 public class Device {
     private int id;
     private String name;
@@ -30,13 +31,5 @@ public class Device {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public void printInfo() {
-        System.out.println("设备编号：" + id);
-        System.out.println("设备名称：" + name);
-        System.out.println("设备类型：" + type);
-        System.out.println("设备状态：" + status);
-        System.out.println("--------------------");
     }
 }
