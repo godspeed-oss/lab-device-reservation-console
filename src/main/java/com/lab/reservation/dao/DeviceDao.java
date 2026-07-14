@@ -69,6 +69,27 @@ public class DeviceDao {
         return devices;
     }
 
+    public ArrayList<Device> findByStatus(String status) throws Exception {
+        ArrayList<Device> devices = new ArrayList<>();
+
+        String sql = "SELECT id, name, type, status FROM device WHERE status = ? ORDER BY id";
+
+        try (
+                Connection connection = DbUtil.getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)
+        ) {
+            preparedStatement.setString(1, status);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    devices.add(mapToDevice(resultSet));
+                }
+            }
+        }
+
+        return devices;
+    }
+
     public int add(Device device) throws Exception {
         String sql = "INSERT INTO device (name, type, status) VALUES (?, ?, ?)";
 

@@ -27,6 +27,15 @@ public class DeviceService {
         return deviceDao.findByNameKeyword(keyword);
     }
 
+    public ArrayList<Device> findDevicesByStatus(String status) throws Exception {
+        if (!isValidStatus(status)) {
+            System.out.println("设备状态不合法，只能输入：可预约 / 维修中 / 停用");
+            return new ArrayList<>();
+        }
+
+        return deviceDao.findByStatus(status);
+    }
+
     public int addDevice(String name, String type, String status) throws Exception {
         if (!isValidStatus(status)) {
             System.out.println("设备状态不合法，只能输入：可预约 / 维修中 / 停用");

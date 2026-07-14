@@ -105,6 +105,7 @@ public class Main {
             System.out.println("9. 新增设备");
             System.out.println("10. 删除设备");
             System.out.println("11. 修改设备信息");
+            System.out.println("12. 按设备状态筛选设备");
             System.out.println("0. 退出系统");
 
             int choice = readInt(scanner, "请输入功能编号：");
@@ -148,6 +149,9 @@ public class Main {
                         break;
                     case 11:
                         updateDevice(scanner, deviceService);
+                        break;
+                    case 12:
+                        findDevicesByStatus(scanner, deviceService);
                         break;
                     default:
                         System.out.println("功能编号不存在，请重新输入");
@@ -300,6 +304,13 @@ public class Main {
         } else {
             System.out.println("设备信息修改失败");
         }
+    }
+
+    private static void findDevicesByStatus(Scanner scanner, DeviceService deviceService) throws Exception {
+        String status = readDeviceStatus(scanner);
+
+        ArrayList<Device> devices = deviceService.findDevicesByStatus(status);
+        showDevices(devices);
     }
 
     private static void printDevice(Device device) {
