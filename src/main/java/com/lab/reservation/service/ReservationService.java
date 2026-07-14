@@ -18,6 +18,10 @@ public class ReservationService {
         return reservationDao.findAll();
     }
 
+    public int countAllReservations() throws Exception {
+        return reservationDao.countAll();
+    }
+
     public int addReservation(Device device, int deviceId, String userName, String reservationDate, String startTime, String endTime) throws Exception {
         if (device == null) {
             System.out.println("设备不存在，无法预约");

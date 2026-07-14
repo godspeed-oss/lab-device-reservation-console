@@ -111,6 +111,22 @@ public class ReservationDao {
         return reservations;
     }
 
+    public int countAll() throws Exception {
+        String sql = "SELECT COUNT(*) FROM reservation";
+
+        try (
+                Connection connection = DbUtil.getConnection();
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(sql)
+        ) {
+            if (resultSet.next()) {
+                return resultSet.getInt(1);
+            }
+        }
+
+        return 0;
+    }
+
     public int add(Reservation reservation) throws Exception {
         String sql = "INSERT INTO reservation (device_id, user_name, reservation_date, start_time, end_time) VALUES (?, ?, ?, ?, ?)";
 

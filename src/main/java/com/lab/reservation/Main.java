@@ -107,6 +107,7 @@ public class Main {
             System.out.println("11. 修改设备信息");
             System.out.println("12. 按设备状态筛选设备");
             System.out.println("13. 修改预约记录");
+            System.out.println("14. 查看系统统计信息");
             System.out.println("0. 退出系统");
 
             int choice = readInt(scanner, "请输入功能编号：");
@@ -156,6 +157,9 @@ public class Main {
                         break;
                     case 13:
                         updateReservation(scanner, deviceService, reservationService);
+                        break;
+                    case 14:
+                        showStatistics(deviceService, reservationService);
                         break;
                     default:
                         System.out.println("功能编号不存在，请重新输入");
@@ -346,6 +350,23 @@ public class Main {
 
         ArrayList<Device> devices = deviceService.findDevicesByStatus(status);
         showDevices(devices);
+    }
+
+    private static void showStatistics(DeviceService deviceService, ReservationService reservationService) throws Exception {
+        int totalDevices = deviceService.countAllDevices();
+        int availableDevices = deviceService.countDevicesByStatus("可预约");
+        int repairingDevices = deviceService.countDevicesByStatus("维修中");
+        int disabledDevices = deviceService.countDevicesByStatus("停用");
+        int totalReservations = reservationService.countAllReservations();
+
+        System.out.println("系统统计信息：");
+        System.out.println("--------------------");
+        System.out.println("设备总数：" + totalDevices);
+        System.out.println("可预约设备数量：" + availableDevices);
+        System.out.println("维修中设备数量：" + repairingDevices);
+        System.out.println("停用设备数量：" + disabledDevices);
+        System.out.println("预约记录总数：" + totalReservations);
+        System.out.println("--------------------");
     }
 
     private static void printDevice(Device device) {

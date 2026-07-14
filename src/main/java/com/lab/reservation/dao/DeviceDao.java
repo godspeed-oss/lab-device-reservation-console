@@ -90,6 +90,41 @@ public class DeviceDao {
         return devices;
     }
 
+    public int countAll() throws Exception {
+        String sql = "SELECT COUNT(*) FROM device";
+
+        try (
+                Connection connection = DbUtil.getConnection();
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(sql)
+        ) {
+            if (resultSet.next()) {
+                return resultSet.getInt(1);
+            }
+        }
+
+        return 0;
+    }
+
+    public int countByStatus(String status) throws Exception {
+        String sql = "SELECT COUNT(*) FROM device WHERE status = ?";
+
+        try (
+                Connection connection = DbUtil.getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)
+        ) {
+            preparedStatement.setString(1, status);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt(1);
+                }
+            }
+        }
+
+        return 0;
+    }
+
     public int add(Device device) throws Exception {
         String sql = "INSERT INTO device (name, type, status) VALUES (?, ?, ?)";
 
