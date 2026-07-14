@@ -85,7 +85,7 @@ public class Main {
         }
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         DeviceDao deviceDao = new DeviceDao();
         ReservationDao reservationDao = new ReservationDao();
         DeviceService deviceService = new DeviceService(deviceDao);
@@ -110,30 +110,35 @@ public class Main {
                 break;
             }
 
-            switch (choice) {
-                case 1:
-                    showDevices(deviceService);
-                    break;
-                case 2:
-                    showReservations(reservationService.findAllReservations());
-                    break;
-                case 3:
-                    addReservation(scanner, deviceService, reservationService);
-                    break;
-                case 4:
-                    findReservationsByDevice(scanner, reservationService);
-                    break;
-                case 5:
-                    deleteReservation(scanner, reservationService);
-                    break;
-                case 6:
-                    updateDeviceStatus(scanner, deviceService);
-                    break;
-                case 7:
-                    findReservationsByDate(scanner, reservationService);
-                    break;
-                default:
-                    System.out.println("功能编号不存在，请重新输入");
+            try {
+                switch (choice) {
+                    case 1:
+                        showDevices(deviceService);
+                        break;
+                    case 2:
+                        showReservations(reservationService.findAllReservations());
+                        break;
+                    case 3:
+                        addReservation(scanner, deviceService, reservationService);
+                        break;
+                    case 4:
+                        findReservationsByDevice(scanner, reservationService);
+                        break;
+                    case 5:
+                        deleteReservation(scanner, reservationService);
+                        break;
+                    case 6:
+                        updateDeviceStatus(scanner, deviceService);
+                        break;
+                    case 7:
+                        findReservationsByDate(scanner, reservationService);
+                        break;
+                    default:
+                        System.out.println("功能编号不存在，请重新输入");
+                }
+            } catch (Exception e) {
+                System.out.println("操作失败，请检查数据库连接或输入内容");
+                System.out.println("错误信息：" + e.getMessage());
             }
 
             System.out.println();
