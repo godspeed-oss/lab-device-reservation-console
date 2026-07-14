@@ -39,6 +39,10 @@ public class ReservationService {
         return reservationDao.add(reservation);
     }
 
+public ArrayList<Reservation> findAllReservations() throws Exception {
+    return reservationDao.findAll();
+}
+
 public boolean deleteReservation(int reservationId) throws Exception {
     return reservationDao.deleteById(reservationId);
 }

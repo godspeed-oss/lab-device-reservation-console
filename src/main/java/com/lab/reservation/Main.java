@@ -4,6 +4,7 @@ import com.lab.reservation.dao.DeviceDao;
 import com.lab.reservation.dao.ReservationDao;
 import com.lab.reservation.entity.Device;
 import com.lab.reservation.entity.Reservation;
+import com.lab.reservation.service.DeviceService;
 import com.lab.reservation.service.ReservationService;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
         DeviceDao deviceDao = new DeviceDao();
         ReservationDao reservationDao = new ReservationDao();
+        DeviceService deviceService = new DeviceService(deviceDao);
         ReservationService reservationService = new ReservationService(reservationDao);
         Scanner scanner = new Scanner(System.in);
 
@@ -38,26 +40,26 @@ public class Main {
 
             switch (choice) {
                 case 1:
-                    showDevices(deviceDao);
+                    showDevices(deviceService);
                     break;
                 case 2:
-                    showReservations(reservationDao.findAll());
+                    showReservations(reservationService.findAllReservations());
                     break;
                 case 3:
-                    addReservation(scanner, deviceDao, reservationService);
+                    addReservation(scanner, deviceService, reservationService);
                     break;
-              case 4:
-    findReservationsByDevice(scanner, reservationService);
-    break;
+                case 4:
+                    findReservationsByDevice(scanner, reservationService);
+                    break;
                 case 5:
-    deleteReservation(scanner, reservationService);
-    break;
-                case 6:
-                    updateDeviceStatus(scanner, deviceDao);
+                    deleteReservation(scanner, reservationService);
                     break;
-              case 7:
-    findReservationsByDate(scanner, reservationService);
-    break;
+                case 6:
+                    updateDeviceStatus(scanner, deviceService);
+                    break;
+                case 7:
+                    findReservationsByDate(scanner, reservationService);
+                    break;
                 default:
                     System.out.println("功能编号不存在，请重新输入");
             }
@@ -68,8 +70,8 @@ public class Main {
         scanner.close();
     }
 
-    private static void showDevices(DeviceDao deviceDao) throws Exception {
-        ArrayList<Device> devices = deviceDao.findAll();
+    private static void showDevices(DeviceService deviceService) throws Exception {
+        ArrayList<Device> devices = deviceService.findAllDevices();
 
         System.out.println("实验室设备列表：");
         System.out.println("--------------------");
@@ -93,12 +95,12 @@ public class Main {
         }
     }
 
-    private static void addReservation(Scanner scanner, DeviceDao deviceDao, ReservationService reservationService) throws Exception {
+    private static void addReservation(Scanner scanner, DeviceService deviceService, ReservationService reservationService) throws Exception {
         System.out.print("请输入设备编号：");
         int deviceId = scanner.nextInt();
         scanner.nextLine();
 
-        Device device = deviceDao.findById(deviceId);
+        Device device = deviceService.findDeviceById(deviceId);
 
         System.out.print("请输入预约人姓名：");
         String userName = scanner.nextLine();
@@ -122,29 +124,29 @@ public class Main {
     }
 
     private static void findReservationsByDevice(Scanner scanner, ReservationService reservationService) throws Exception {
-    System.out.print("请输入设备编号：");
-    int deviceId = scanner.nextInt();
-    scanner.nextLine();
+        System.out.print("请输入设备编号：");
+        int deviceId = scanner.nextInt();
+        scanner.nextLine();
 
-    ArrayList<Reservation> reservations = reservationService.findReservationsByDeviceId(deviceId);
-    showReservations(reservations);
-}
-
-   private static void deleteReservation(Scanner scanner, ReservationService reservationService) throws Exception {
-    System.out.print("请输入要删除的预约编号：");
-    int reservationId = scanner.nextInt();
-    scanner.nextLine();
-
-    boolean success = reservationService.deleteReservation(reservationId);
-
-    if (success) {
-        System.out.println("预约删除成功");
-    } else {
-        System.out.println("预约不存在，删除失败");
+        ArrayList<Reservation> reservations = reservationService.findReservationsByDeviceId(deviceId);
+        showReservations(reservations);
     }
-}
 
-    private static void updateDeviceStatus(Scanner scanner, DeviceDao deviceDao) throws Exception {
+    private static void deleteReservation(Scanner scanner, ReservationService reservationService) throws Exception {
+        System.out.print("请输入要删除的预约编号：");
+        int reservationId = scanner.nextInt();
+        scanner.nextLine();
+
+        boolean success = reservationService.deleteReservation(reservationId);
+
+        if (success) {
+            System.out.println("预约删除成功");
+        } else {
+            System.out.println("预约不存在，删除失败");
+        }
+    }
+
+    private static void updateDeviceStatus(Scanner scanner, DeviceService deviceService) throws Exception {
         System.out.print("请输入设备编号：");
         int deviceId = scanner.nextInt();
         scanner.nextLine();
@@ -152,7 +154,7 @@ public class Main {
         System.out.print("请输入新的设备状态，例如 可预约 / 维修中：");
         String status = scanner.nextLine();
 
-        boolean success = deviceDao.updateStatus(deviceId, status);
+        boolean success = deviceService.updateDeviceStatus(deviceId, status);
 
         if (success) {
             System.out.println("设备状态修改成功");
@@ -161,13 +163,14 @@ public class Main {
         }
     }
 
-private static void findReservationsByDate(Scanner scanner, ReservationService reservationService) throws Exception {
-    System.out.print("请输入预约日期，例如 2026-07-09：");
-    String reservationDate = scanner.nextLine();
+    private static void findReservationsByDate(Scanner scanner, ReservationService reservationService) throws Exception {
+        System.out.print("请输入预约日期，例如 2026-07-09：");
+        String reservationDate = scanner.nextLine();
 
-    ArrayList<Reservation> reservations = reservationService.findReservationsByDate(reservationDate);
-    showReservations(reservations);
-}
+        ArrayList<Reservation> reservations = reservationService.findReservationsByDate(reservationDate);
+        showReservations(reservations);
+    }
+
     private static void printDevice(Device device) {
         System.out.println("设备编号：" + device.getId());
         System.out.println("设备名称：" + device.getName());
