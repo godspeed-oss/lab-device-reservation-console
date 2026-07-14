@@ -8,6 +8,7 @@ import com.lab.reservation.service.DeviceService;
 import com.lab.reservation.service.ReservationService;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -35,6 +36,20 @@ public class Main {
                 return input;
             } catch (Exception e) {
                 System.out.println("日期格式不正确，请输入类似 2026-07-09 的日期");
+            }
+        }
+    }
+
+    private static String readTime(Scanner scanner, String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine();
+
+            try {
+                LocalTime.parse(input);
+                return input;
+            } catch (Exception e) {
+                System.out.println("时间格式不正确，请输入类似 09:00 的时间");
             }
         }
     }
@@ -131,11 +146,9 @@ public class Main {
 
         String reservationDate = readDate(scanner, "请输入预约日期，例如 2026-07-09：");
 
-        System.out.print("请输入开始时间，例如 09:00：");
-        String startTime = scanner.nextLine();
+        String startTime = readTime(scanner, "请输入开始时间，例如 09:00：");
 
-        System.out.print("请输入结束时间，例如 11:00：");
-        String endTime = scanner.nextLine();
+        String endTime = readTime(scanner, "请输入结束时间，例如 11:00：");
 
         boolean success = reservationService.addReservation(device, deviceId, userName, reservationDate, startTime, endTime);
 
