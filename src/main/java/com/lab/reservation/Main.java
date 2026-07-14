@@ -88,7 +88,7 @@ public class Main {
     public static void main(String[] args) {
         DeviceDao deviceDao = new DeviceDao();
         ReservationDao reservationDao = new ReservationDao();
-        DeviceService deviceService = new DeviceService(deviceDao);
+        DeviceService deviceService = new DeviceService(deviceDao, reservationDao);
         ReservationService reservationService = new ReservationService(reservationDao);
         Scanner scanner = new Scanner(System.in);
 
@@ -103,6 +103,7 @@ public class Main {
             System.out.println("7. 按日期查询预约记录");
             System.out.println("8. 按设备名称搜索设备");
             System.out.println("9. 新增设备");
+            System.out.println("10. 删除设备");
             System.out.println("0. 退出系统");
 
             int choice = readInt(scanner, "请输入功能编号：");
@@ -140,6 +141,9 @@ public class Main {
                         break;
                     case 9:
                         addDevice(scanner, deviceService);
+                        break;
+                    case 10:
+                        deleteDevice(scanner, deviceService);
                         break;
                     default:
                         System.out.println("功能编号不存在，请重新输入");
@@ -263,6 +267,18 @@ public class Main {
             System.out.println("设备新增成功，设备编号：" + deviceId);
         } else {
             System.out.println("设备新增失败");
+        }
+    }
+
+    private static void deleteDevice(Scanner scanner, DeviceService deviceService) throws Exception {
+        int deviceId = readInt(scanner, "请输入要删除的设备编号：");
+
+        boolean success = deviceService.deleteDevice(deviceId);
+
+        if (success) {
+            System.out.println("设备删除成功");
+        } else {
+            System.out.println("设备删除失败");
         }
     }
 

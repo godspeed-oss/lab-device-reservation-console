@@ -1,15 +1,18 @@
 package com.lab.reservation.service;
 
 import com.lab.reservation.dao.DeviceDao;
+import com.lab.reservation.dao.ReservationDao;
 import com.lab.reservation.entity.Device;
 
 import java.util.ArrayList;
 
 public class DeviceService {
     private DeviceDao deviceDao;
+    private ReservationDao reservationDao;
 
-    public DeviceService(DeviceDao deviceDao) {
+    public DeviceService(DeviceDao deviceDao, ReservationDao reservationDao) {
         this.deviceDao = deviceDao;
+        this.reservationDao = reservationDao;
     }
 
     public ArrayList<Device> findAllDevices() throws Exception {
@@ -41,6 +44,21 @@ public class DeviceService {
         }
 
         return deviceDao.updateStatus(deviceId, status);
+    }
+
+    public boolean deleteDevice(int deviceId) throws Exception {
+        Device device = deviceDao.findById(deviceId);
+        if (device == null) {
+            System.out.println("设备不存在，删除失败");
+            return false;
+        }
+
+        if (reservationDao.existsByDeviceId(deviceId)) {
+            System.out.println("该设备已有预约记录，不能删除");
+            return false;
+        }
+
+        return deviceDao.deleteById(deviceId);
     }
 
     private boolean isValidStatus(String status) {

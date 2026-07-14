@@ -111,6 +111,20 @@ public class DeviceDao {
         }
     }
 
+    public boolean deleteById(int id) throws Exception {
+        String sql = "DELETE FROM device WHERE id = ?";
+
+        try (
+                Connection connection = DbUtil.getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)
+        ) {
+            preparedStatement.setInt(1, id);
+
+            int affectedRows = preparedStatement.executeUpdate();
+            return affectedRows > 0;
+        }
+    }
+
     private Device mapToDevice(ResultSet resultSet) throws Exception {
         return new Device(
                 resultSet.getInt("id"),

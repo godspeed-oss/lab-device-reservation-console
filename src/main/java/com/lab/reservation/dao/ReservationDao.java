@@ -52,6 +52,25 @@ public class ReservationDao {
         return reservations;
     }
 
+    public boolean existsByDeviceId(int deviceId) throws Exception {
+        String sql = "SELECT COUNT(*) FROM reservation WHERE device_id = ?";
+
+        try (
+                Connection connection = DbUtil.getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)
+        ) {
+            preparedStatement.setInt(1, deviceId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt(1) > 0;
+                }
+            }
+        }
+
+        return false;
+    }
+
     public ArrayList<Reservation> findByDate(String reservationDate) throws Exception {
         ArrayList<Reservation> reservations = new ArrayList<>();
 
