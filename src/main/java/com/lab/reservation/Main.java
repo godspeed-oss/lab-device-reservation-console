@@ -101,6 +101,7 @@ public class Main {
             System.out.println("5. 删除预约记录");
             System.out.println("6. 修改设备状态");
             System.out.println("7. 按日期查询预约记录");
+            System.out.println("8. 按设备名称搜索设备");
             System.out.println("0. 退出系统");
 
             int choice = readInt(scanner, "请输入功能编号：");
@@ -113,7 +114,7 @@ public class Main {
             try {
                 switch (choice) {
                     case 1:
-                        showDevices(deviceService);
+                        showDevices(deviceService.findAllDevices());
                         break;
                     case 2:
                         showReservations(reservationService.findAllReservations());
@@ -133,6 +134,9 @@ public class Main {
                     case 7:
                         findReservationsByDate(scanner, reservationService);
                         break;
+                    case 8:
+                        searchDevices(scanner, deviceService);
+                        break;
                     default:
                         System.out.println("功能编号不存在，请重新输入");
                 }
@@ -147,11 +151,14 @@ public class Main {
         scanner.close();
     }
 
-    private static void showDevices(DeviceService deviceService) throws Exception {
-        ArrayList<Device> devices = deviceService.findAllDevices();
-
+    private static void showDevices(ArrayList<Device> devices) {
         System.out.println("实验室设备列表：");
         System.out.println("--------------------");
+
+        if (devices.isEmpty()) {
+            System.out.println("暂无设备记录");
+            return;
+        }
 
         for (Device device : devices) {
             printDevice(device);
@@ -232,6 +239,13 @@ public class Main {
 
         ArrayList<Reservation> reservations = reservationService.findReservationsByDate(reservationDate);
         showReservations(reservations);
+    }
+
+    private static void searchDevices(Scanner scanner, DeviceService deviceService) throws Exception {
+        String keyword = readRequiredText(scanner, "请输入设备名称关键词：");
+
+        ArrayList<Device> devices = deviceService.searchDevicesByName(keyword);
+        showDevices(devices);
     }
 
     private static void printDevice(Device device) {

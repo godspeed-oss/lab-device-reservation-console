@@ -6,7 +6,6 @@ import com.lab.reservation.util.DbUtil;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
@@ -15,7 +14,7 @@ public class DeviceDao {
     public ArrayList<Device> findAll() throws Exception {
         ArrayList<Device> devices = new ArrayList<>();
 
-        String sql = "SELECT id, name, type, status FROM device";
+        String sql = "SELECT id, name, type, status FROM device ORDER BY id";
 
         try (
                 Connection connection = DbUtil.getConnection();
@@ -23,13 +22,7 @@ public class DeviceDao {
                 ResultSet resultSet = statement.executeQuery(sql)
         ) {
             while (resultSet.next()) {
-                Device device = new Device(
-                        resultSet.getInt("id"),
-                        resultSet.getString("name"),
-                        resultSet.getString("type"),
-                        resultSet.getString("status")
-                );
-                devices.add(device);
+                devices.add(mapToDevice(resultSet));
             }
         }
 
@@ -47,17 +40,33 @@ public class DeviceDao {
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
-                    return new Device(
-                            resultSet.getInt("id"),
-                            resultSet.getString("name"),
-                            resultSet.getString("type"),
-                            resultSet.getString("status")
-                    );
+                    return mapToDevice(resultSet);
                 }
             }
         }
 
         return null;
+    }
+
+    public ArrayList<Device> findByNameKeyword(String keyword) throws Exception {
+        ArrayList<Device> devices = new ArrayList<>();
+
+        String sql = "SELECT id, name, type, status FROM device WHERE name LIKE ? ORDER BY id";
+
+        try (
+                Connection connection = DbUtil.getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)
+        ) {
+            preparedStatement.setString(1, "%" + keyword + "%");
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    devices.add(mapToDevice(resultSet));
+                }
+            }
+        }
+
+        return devices;
     }
 
     public boolean updateStatus(int id, String status) throws Exception {
@@ -73,5 +82,14 @@ public class DeviceDao {
             int affectedRows = preparedStatement.executeUpdate();
             return affectedRows > 0;
         }
+    }
+
+    private Device mapToDevice(ResultSet resultSet) throws Exception {
+        return new Device(
+                resultSet.getInt("id"),
+                resultSet.getString("name"),
+                resultSet.getString("type"),
+                resultSet.getString("status")
+        );
     }
 }

@@ -20,6 +20,10 @@ public class DeviceService {
         return deviceDao.findById(deviceId);
     }
 
+    public ArrayList<Device> searchDevicesByName(String keyword) throws Exception {
+        return deviceDao.findByNameKeyword(keyword);
+    }
+
     public boolean updateDeviceStatus(int deviceId, String status) throws Exception {
         if (!isValidStatus(status)) {
             System.out.println("设备状态不合法，只能输入：可预约 / 维修中 / 停用");
