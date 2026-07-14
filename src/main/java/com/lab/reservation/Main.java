@@ -54,6 +54,24 @@ public class Main {
         }
     }
 
+    private static String readDeviceStatus(Scanner scanner) {
+        while (true) {
+            System.out.print("请输入新的设备状态：1. 可预约  2. 维修中  3. 停用：");
+            String input = scanner.nextLine();
+
+            switch (input) {
+                case "1":
+                    return "可预约";
+                case "2":
+                    return "维修中";
+                case "3":
+                    return "停用";
+                default:
+                    System.out.println("状态编号不存在，请重新输入");
+            }
+        }
+    }
+
     public static void main(String[] args) throws Exception {
         DeviceDao deviceDao = new DeviceDao();
         ReservationDao reservationDao = new ReservationDao();
@@ -181,15 +199,14 @@ public class Main {
     private static void updateDeviceStatus(Scanner scanner, DeviceService deviceService) throws Exception {
         int deviceId = readInt(scanner, "请输入设备编号：");
 
-        System.out.print("请输入新的设备状态，例如 可预约 / 维修中：");
-        String status = scanner.nextLine();
+        String status = readDeviceStatus(scanner);
 
         boolean success = deviceService.updateDeviceStatus(deviceId, status);
 
         if (success) {
             System.out.println("设备状态修改成功");
         } else {
-            System.out.println("设备不存在，修改失败");
+            System.out.println("设备状态修改失败");
         }
     }
 
