@@ -69,6 +69,33 @@ public class DeviceDao {
         return devices;
     }
 
+    public int add(Device device) throws Exception {
+        String sql = "INSERT INTO device (name, type, status) VALUES (?, ?, ?)";
+
+        try (
+                Connection connection = DbUtil.getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
+        ) {
+            preparedStatement.setString(1, device.getName());
+            preparedStatement.setString(2, device.getType());
+            preparedStatement.setString(3, device.getStatus());
+
+            int affectedRows = preparedStatement.executeUpdate();
+
+            if (affectedRows == 0) {
+                return -1;
+            }
+
+            try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    return generatedKeys.getInt(1);
+                }
+            }
+
+            return -1;
+        }
+    }
+
     public boolean updateStatus(int id, String status) throws Exception {
         String sql = "UPDATE device SET status = ? WHERE id = ?";
 

@@ -69,7 +69,7 @@ public class Main {
 
     private static String readDeviceStatus(Scanner scanner) {
         while (true) {
-            System.out.print("请输入新的设备状态：1. 可预约  2. 维修中  3. 停用：");
+            System.out.print("请选择设备状态：1. 可预约  2. 维修中  3. 停用：");
             String input = scanner.nextLine();
 
             switch (input) {
@@ -102,6 +102,7 @@ public class Main {
             System.out.println("6. 修改设备状态");
             System.out.println("7. 按日期查询预约记录");
             System.out.println("8. 按设备名称搜索设备");
+            System.out.println("9. 新增设备");
             System.out.println("0. 退出系统");
 
             int choice = readInt(scanner, "请输入功能编号：");
@@ -136,6 +137,9 @@ public class Main {
                         break;
                     case 8:
                         searchDevices(scanner, deviceService);
+                        break;
+                    case 9:
+                        addDevice(scanner, deviceService);
                         break;
                     default:
                         System.out.println("功能编号不存在，请重新输入");
@@ -246,6 +250,20 @@ public class Main {
 
         ArrayList<Device> devices = deviceService.searchDevicesByName(keyword);
         showDevices(devices);
+    }
+
+    private static void addDevice(Scanner scanner, DeviceService deviceService) throws Exception {
+        String name = readRequiredText(scanner, "请输入设备名称：");
+        String type = readRequiredText(scanner, "请输入设备类型：");
+        String status = readDeviceStatus(scanner);
+
+        int deviceId = deviceService.addDevice(name, type, status);
+
+        if (deviceId > 0) {
+            System.out.println("设备新增成功，设备编号：" + deviceId);
+        } else {
+            System.out.println("设备新增失败");
+        }
     }
 
     private static void printDevice(Device device) {
