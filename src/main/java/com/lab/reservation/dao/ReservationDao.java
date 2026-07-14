@@ -97,12 +97,12 @@ public class ReservationDao {
         return reservations;
     }
 
-    public boolean add(Reservation reservation) throws Exception {
+    public int add(Reservation reservation) throws Exception {
         String sql = "INSERT INTO reservation (device_id, user_name, reservation_date, start_time, end_time) VALUES (?, ?, ?, ?, ?)";
 
         try (
                 Connection connection = DbUtil.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)
+                PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
         ) {
             preparedStatement.setInt(1, reservation.getDeviceId());
             preparedStatement.setString(2, reservation.getUserName());
@@ -111,7 +111,18 @@ public class ReservationDao {
             preparedStatement.setTime(5, Time.valueOf(reservation.getEndTime() + ":00"));
 
             int affectedRows = preparedStatement.executeUpdate();
-            return affectedRows > 0;
+
+            if (affectedRows == 0) {
+                return -1;
+            }
+
+            try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    return generatedKeys.getInt(1);
+                }
+            }
+
+            return -1;
         }
     }
 

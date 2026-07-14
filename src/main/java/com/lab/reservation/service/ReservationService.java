@@ -18,25 +18,25 @@ public class ReservationService {
         return reservationDao.findAll();
     }
 
-    public boolean addReservation(Device device, int deviceId, String userName, String reservationDate, String startTime, String endTime) throws Exception {
+    public int addReservation(Device device, int deviceId, String userName, String reservationDate, String startTime, String endTime) throws Exception {
         if (device == null) {
             System.out.println("设备不存在，无法预约");
-            return false;
+            return -1;
         }
 
         if (!"可预约".equals(device.getStatus())) {
             System.out.println("该设备当前状态为：" + device.getStatus() + "，无法预约");
-            return false;
+            return -1;
         }
 
         if (!isValidTimeRange(startTime, endTime)) {
             System.out.println("时间段不合法，开始时间必须早于结束时间");
-            return false;
+            return -1;
         }
 
         if (hasTimeConflict(deviceId, reservationDate, startTime, endTime)) {
             System.out.println("预约失败：该设备在这个时间段已有预约");
-            return false;
+            return -1;
         }
 
         Reservation reservation = new Reservation(0, deviceId, userName, reservationDate, startTime, endTime);

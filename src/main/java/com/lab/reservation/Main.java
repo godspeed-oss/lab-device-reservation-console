@@ -185,10 +185,10 @@ public class Main {
 
         String endTime = readTime(scanner, "请输入结束时间，例如 11:00：");
 
-        boolean success = reservationService.addReservation(device, deviceId, userName, reservationDate, startTime, endTime);
+        int reservationId = reservationService.addReservation(device, deviceId, userName, reservationDate, startTime, endTime);
 
-        if (success) {
-            System.out.println("预约新增成功");
+        if (reservationId > 0) {
+            System.out.println("预约新增成功，预约编号：" + reservationId);
         } else {
             System.out.println("预约新增失败");
         }
