@@ -7,6 +7,7 @@ import com.lab.reservation.entity.Reservation;
 import com.lab.reservation.service.DeviceService;
 import com.lab.reservation.service.ReservationService;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -20,6 +21,20 @@ public class Main {
                 return Integer.parseInt(input);
             } catch (NumberFormatException e) {
                 System.out.println("请输入数字");
+            }
+        }
+    }
+
+    private static String readDate(Scanner scanner, String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine();
+
+            try {
+                LocalDate.parse(input);
+                return input;
+            } catch (Exception e) {
+                System.out.println("日期格式不正确，请输入类似 2026-07-09 的日期");
             }
         }
     }
@@ -114,8 +129,7 @@ public class Main {
         System.out.print("请输入预约人姓名：");
         String userName = scanner.nextLine();
 
-        System.out.print("请输入预约日期，例如 2026-07-09：");
-        String reservationDate = scanner.nextLine();
+        String reservationDate = readDate(scanner, "请输入预约日期，例如 2026-07-09：");
 
         System.out.print("请输入开始时间，例如 09:00：");
         String startTime = scanner.nextLine();
@@ -167,8 +181,7 @@ public class Main {
     }
 
     private static void findReservationsByDate(Scanner scanner, ReservationService reservationService) throws Exception {
-        System.out.print("请输入预约日期，例如 2026-07-09：");
-        String reservationDate = scanner.nextLine();
+        String reservationDate = readDate(scanner, "请输入预约日期，例如 2026-07-09：");
 
         ArrayList<Reservation> reservations = reservationService.findReservationsByDate(reservationDate);
         showReservations(reservations);
