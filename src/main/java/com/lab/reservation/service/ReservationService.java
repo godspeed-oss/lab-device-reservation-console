@@ -34,13 +34,44 @@ public class ReservationService {
             return -1;
         }
 
-        if (hasTimeConflict(deviceId, reservationDate, startTime, endTime)) {
+        if (hasTimeConflict(0, deviceId, reservationDate, startTime, endTime)) {
             System.out.println("预约失败：该设备在这个时间段已有预约");
             return -1;
         }
 
         Reservation reservation = new Reservation(0, deviceId, userName, reservationDate, startTime, endTime);
         return reservationDao.add(reservation);
+    }
+
+    public boolean updateReservation(int reservationId, Device device, int deviceId, String userName, String reservationDate, String startTime, String endTime) throws Exception {
+        Reservation oldReservation = reservationDao.findById(reservationId);
+        if (oldReservation == null) {
+            System.out.println("预约记录不存在，修改失败");
+            return false;
+        }
+
+        if (device == null) {
+            System.out.println("设备不存在，无法修改预约");
+            return false;
+        }
+
+        if (!"可预约".equals(device.getStatus())) {
+            System.out.println("该设备当前状态为：" + device.getStatus() + "，无法预约");
+            return false;
+        }
+
+        if (!isValidTimeRange(startTime, endTime)) {
+            System.out.println("时间段不合法，开始时间必须早于结束时间");
+            return false;
+        }
+
+        if (hasTimeConflict(reservationId, deviceId, reservationDate, startTime, endTime)) {
+            System.out.println("修改失败：该设备在这个时间段已有预约");
+            return false;
+        }
+
+        Reservation newReservation = new Reservation(reservationId, deviceId, userName, reservationDate, startTime, endTime);
+        return reservationDao.update(newReservation);
     }
 
     public boolean deleteReservation(int reservationId) throws Exception {
@@ -65,13 +96,17 @@ public class ReservationService {
         }
     }
 
-    private boolean hasTimeConflict(int deviceId, String reservationDate, String startTime, String endTime) throws Exception {
+    private boolean hasTimeConflict(int currentReservationId, int deviceId, String reservationDate, String startTime, String endTime) throws Exception {
         ArrayList<Reservation> reservations = reservationDao.findByDeviceId(deviceId);
 
         LocalTime newStart = LocalTime.parse(startTime);
         LocalTime newEnd = LocalTime.parse(endTime);
 
         for (Reservation reservation : reservations) {
+            if (reservation.getId() == currentReservationId) {
+                continue;
+            }
+
             if (!reservationDate.equals(reservation.getReservationDate())) {
                 continue;
             }

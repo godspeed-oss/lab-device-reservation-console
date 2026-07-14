@@ -31,6 +31,25 @@ public class ReservationDao {
         return reservations;
     }
 
+    public Reservation findById(int id) throws Exception {
+        String sql = "SELECT id, device_id, user_name, reservation_date, start_time, end_time FROM reservation WHERE id = ?";
+
+        try (
+                Connection connection = DbUtil.getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)
+        ) {
+            preparedStatement.setInt(1, id);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return mapToReservation(resultSet);
+                }
+            }
+        }
+
+        return null;
+    }
+
     public ArrayList<Reservation> findByDeviceId(int deviceId) throws Exception {
         ArrayList<Reservation> reservations = new ArrayList<>();
 
@@ -118,6 +137,25 @@ public class ReservationDao {
             }
 
             return -1;
+        }
+    }
+
+    public boolean update(Reservation reservation) throws Exception {
+        String sql = "UPDATE reservation SET device_id = ?, user_name = ?, reservation_date = ?, start_time = ?, end_time = ? WHERE id = ?";
+
+        try (
+                Connection connection = DbUtil.getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(sql)
+        ) {
+            preparedStatement.setInt(1, reservation.getDeviceId());
+            preparedStatement.setString(2, reservation.getUserName());
+            preparedStatement.setDate(3, Date.valueOf(reservation.getReservationDate()));
+            preparedStatement.setTime(4, Time.valueOf(reservation.getStartTime() + ":00"));
+            preparedStatement.setTime(5, Time.valueOf(reservation.getEndTime() + ":00"));
+            preparedStatement.setInt(6, reservation.getId());
+
+            int affectedRows = preparedStatement.executeUpdate();
+            return affectedRows > 0;
         }
     }
 

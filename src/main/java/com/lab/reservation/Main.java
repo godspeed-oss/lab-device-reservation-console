@@ -106,6 +106,7 @@ public class Main {
             System.out.println("10. 删除设备");
             System.out.println("11. 修改设备信息");
             System.out.println("12. 按设备状态筛选设备");
+            System.out.println("13. 修改预约记录");
             System.out.println("0. 退出系统");
 
             int choice = readInt(scanner, "请输入功能编号：");
@@ -152,6 +153,9 @@ public class Main {
                         break;
                     case 12:
                         findDevicesByStatus(scanner, deviceService);
+                        break;
+                    case 13:
+                        updateReservation(scanner, deviceService, reservationService);
                         break;
                     default:
                         System.out.println("功能编号不存在，请重新输入");
@@ -214,6 +218,37 @@ public class Main {
             System.out.println("预约新增成功，预约编号：" + reservationId);
         } else {
             System.out.println("预约新增失败");
+        }
+    }
+
+    private static void updateReservation(Scanner scanner, DeviceService deviceService, ReservationService reservationService) throws Exception {
+        int reservationId = readInt(scanner, "请输入要修改的预约编号：");
+
+        int deviceId = readInt(scanner, "请输入新的设备编号：");
+        Device device = deviceService.findDeviceById(deviceId);
+
+        String userName = readRequiredText(scanner, "请输入新的预约人姓名：");
+
+        String reservationDate = readDate(scanner, "请输入新的预约日期，例如 2026-07-09：");
+
+        String startTime = readTime(scanner, "请输入新的开始时间，例如 09:00：");
+
+        String endTime = readTime(scanner, "请输入新的结束时间，例如 11:00：");
+
+        boolean success = reservationService.updateReservation(
+                reservationId,
+                device,
+                deviceId,
+                userName,
+                reservationDate,
+                startTime,
+                endTime
+        );
+
+        if (success) {
+            System.out.println("预约记录修改成功");
+        } else {
+            System.out.println("预约记录修改失败");
         }
     }
 
