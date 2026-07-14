@@ -43,6 +43,14 @@ public boolean deleteReservation(int reservationId) throws Exception {
     return reservationDao.deleteById(reservationId);
 }
 
+public ArrayList<Reservation> findReservationsByDeviceId(int deviceId) throws Exception {
+    return reservationDao.findByDeviceId(deviceId);
+}
+
+public ArrayList<Reservation> findReservationsByDate(String reservationDate) throws Exception {
+    return reservationDao.findByDate(reservationDate);
+}
+
     private boolean isValidTimeRange(String startTime, String endTime) {
         try {
             LocalTime start = LocalTime.parse(startTime);

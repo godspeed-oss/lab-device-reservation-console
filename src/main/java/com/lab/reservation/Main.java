@@ -46,18 +46,18 @@ public class Main {
                 case 3:
                     addReservation(scanner, deviceDao, reservationService);
                     break;
-                case 4:
-                    findReservationsByDevice(scanner, reservationDao);
-                    break;
+              case 4:
+    findReservationsByDevice(scanner, reservationService);
+    break;
                 case 5:
     deleteReservation(scanner, reservationService);
     break;
                 case 6:
                     updateDeviceStatus(scanner, deviceDao);
                     break;
-                case 7:
-                    findReservationsByDate(scanner, reservationDao);
-                    break;
+              case 7:
+    findReservationsByDate(scanner, reservationService);
+    break;
                 default:
                     System.out.println("功能编号不存在，请重新输入");
             }
@@ -121,14 +121,14 @@ public class Main {
         }
     }
 
-    private static void findReservationsByDevice(Scanner scanner, ReservationDao reservationDao) throws Exception {
-        System.out.print("请输入设备编号：");
-        int deviceId = scanner.nextInt();
-        scanner.nextLine();
+    private static void findReservationsByDevice(Scanner scanner, ReservationService reservationService) throws Exception {
+    System.out.print("请输入设备编号：");
+    int deviceId = scanner.nextInt();
+    scanner.nextLine();
 
-        ArrayList<Reservation> reservations = reservationDao.findByDeviceId(deviceId);
-        showReservations(reservations);
-    }
+    ArrayList<Reservation> reservations = reservationService.findReservationsByDeviceId(deviceId);
+    showReservations(reservations);
+}
 
    private static void deleteReservation(Scanner scanner, ReservationService reservationService) throws Exception {
     System.out.print("请输入要删除的预约编号：");
@@ -161,14 +161,13 @@ public class Main {
         }
     }
 
-    private static void findReservationsByDate(Scanner scanner, ReservationDao reservationDao) throws Exception {
-        System.out.print("请输入预约日期，例如 2026-07-09：");
-        String reservationDate = scanner.nextLine();
+private static void findReservationsByDate(Scanner scanner, ReservationService reservationService) throws Exception {
+    System.out.print("请输入预约日期，例如 2026-07-09：");
+    String reservationDate = scanner.nextLine();
 
-        ArrayList<Reservation> reservations = reservationDao.findByDate(reservationDate);
-        showReservations(reservations);
-    }
-
+    ArrayList<Reservation> reservations = reservationService.findReservationsByDate(reservationDate);
+    showReservations(reservations);
+}
     private static void printDevice(Device device) {
         System.out.println("设备编号：" + device.getId());
         System.out.println("设备名称：" + device.getName());
