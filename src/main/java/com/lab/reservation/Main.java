@@ -39,6 +39,23 @@ public class Main {
         }
     }
 
+    private static boolean confirm(Scanner scanner, String prompt) {
+        while (true) {
+            System.out.print(prompt + "（y/n）：");
+            String input = scanner.nextLine().trim();
+
+            if ("y".equalsIgnoreCase(input)) {
+                return true;
+            }
+
+            if ("n".equalsIgnoreCase(input)) {
+                return false;
+            }
+
+            System.out.println("请输入 y 或 n");
+        }
+    }
+
     private static String readDate(Scanner scanner, String prompt) {
         while (true) {
             System.out.print(prompt);
@@ -266,6 +283,11 @@ public class Main {
     private static void deleteReservation(Scanner scanner, ReservationService reservationService) throws Exception {
         int reservationId = readInt(scanner, "请输入要删除的预约编号：");
 
+        if (!confirm(scanner, "确认删除该预约记录吗")) {
+            System.out.println("已取消删除");
+            return;
+        }
+
         boolean success = reservationService.deleteReservation(reservationId);
 
         if (success) {
@@ -319,6 +341,11 @@ public class Main {
 
     private static void deleteDevice(Scanner scanner, DeviceService deviceService) throws Exception {
         int deviceId = readInt(scanner, "请输入要删除的设备编号：");
+
+        if (!confirm(scanner, "确认删除该设备吗")) {
+            System.out.println("已取消删除");
+            return;
+        }
 
         boolean success = deviceService.deleteDevice(deviceId);
 
