@@ -256,6 +256,11 @@ public class Main {
 
         String endTime = readTime(scanner, "请输入新的结束时间，例如 11:00：");
 
+        if (!confirm(scanner, "确认修改该预约记录吗")) {
+            System.out.println("已取消修改");
+            return;
+        }
+
         boolean success = reservationService.updateReservation(
                 reservationId,
                 device,
@@ -301,6 +306,11 @@ public class Main {
         int deviceId = readInt(scanner, "请输入设备编号：");
 
         String status = readDeviceStatus(scanner);
+
+        if (!confirm(scanner, "确认修改该设备状态吗")) {
+            System.out.println("已取消修改");
+            return;
+        }
 
         boolean success = deviceService.updateDeviceStatus(deviceId, status);
 
@@ -362,6 +372,11 @@ public class Main {
         String name = readRequiredText(scanner, "请输入新的设备名称：");
         String type = readRequiredText(scanner, "请输入新的设备类型：");
         String status = readDeviceStatus(scanner);
+
+        if (!confirm(scanner, "确认修改该设备信息吗")) {
+            System.out.println("已取消修改");
+            return;
+        }
 
         boolean success = deviceService.updateDevice(deviceId, name, type, status);
 
