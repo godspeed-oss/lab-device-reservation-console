@@ -6,7 +6,7 @@ DROP TABLE IF EXISTS reservation;
 DROP TABLE IF EXISTS device;
 
 CREATE TABLE device (
-    id INT PRIMARY KEY,
+    id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(50) NOT NULL,
     type VARCHAR(50) NOT NULL,
     status VARCHAR(20) NOT NULL
@@ -26,3 +26,5 @@ INSERT INTO device (id, name, type, status) VALUES
 (1, '显微镜', '光学设备', '可预约'),
 (2, '3D打印机', '制造设备', '维修中'),
 (3, '高速离心机', '实验设备', '可预约');
+
+ALTER TABLE device AUTO_INCREMENT = 4;
