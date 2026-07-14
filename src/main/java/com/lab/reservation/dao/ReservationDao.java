@@ -16,7 +16,7 @@ public class ReservationDao {
     public ArrayList<Reservation> findAll() throws Exception {
         ArrayList<Reservation> reservations = new ArrayList<>();
 
-        String sql = "SELECT id, device_id, user_name, reservation_date, start_time, end_time FROM reservation";
+        String sql = "SELECT id, device_id, user_name, reservation_date, start_time, end_time FROM reservation ORDER BY reservation_date, start_time, id";
 
         try (
                 Connection connection = DbUtil.getConnection();
@@ -24,15 +24,7 @@ public class ReservationDao {
                 ResultSet resultSet = statement.executeQuery(sql)
         ) {
             while (resultSet.next()) {
-                Reservation reservation = new Reservation(
-                        resultSet.getInt("id"),
-                        resultSet.getInt("device_id"),
-                        resultSet.getString("user_name"),
-                        resultSet.getDate("reservation_date").toString(),
-                        resultSet.getTime("start_time").toString(),
-                        resultSet.getTime("end_time").toString()
-                );
-                reservations.add(reservation);
+                reservations.add(mapToReservation(resultSet));
             }
         }
 
@@ -42,7 +34,7 @@ public class ReservationDao {
     public ArrayList<Reservation> findByDeviceId(int deviceId) throws Exception {
         ArrayList<Reservation> reservations = new ArrayList<>();
 
-        String sql = "SELECT id, device_id, user_name, reservation_date, start_time, end_time FROM reservation WHERE device_id = ?";
+        String sql = "SELECT id, device_id, user_name, reservation_date, start_time, end_time FROM reservation WHERE device_id = ? ORDER BY reservation_date, start_time, id";
 
         try (
                 Connection connection = DbUtil.getConnection();
@@ -52,15 +44,7 @@ public class ReservationDao {
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
-                    Reservation reservation = new Reservation(
-                            resultSet.getInt("id"),
-                            resultSet.getInt("device_id"),
-                            resultSet.getString("user_name"),
-                            resultSet.getDate("reservation_date").toString(),
-                            resultSet.getTime("start_time").toString(),
-                            resultSet.getTime("end_time").toString()
-                    );
-                    reservations.add(reservation);
+                    reservations.add(mapToReservation(resultSet));
                 }
             }
         }
@@ -71,7 +55,7 @@ public class ReservationDao {
     public ArrayList<Reservation> findByDate(String reservationDate) throws Exception {
         ArrayList<Reservation> reservations = new ArrayList<>();
 
-        String sql = "SELECT id, device_id, user_name, reservation_date, start_time, end_time FROM reservation WHERE reservation_date = ?";
+        String sql = "SELECT id, device_id, user_name, reservation_date, start_time, end_time FROM reservation WHERE reservation_date = ? ORDER BY start_time, id";
 
         try (
                 Connection connection = DbUtil.getConnection();
@@ -81,15 +65,7 @@ public class ReservationDao {
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
-                    Reservation reservation = new Reservation(
-                            resultSet.getInt("id"),
-                            resultSet.getInt("device_id"),
-                            resultSet.getString("user_name"),
-                            resultSet.getDate("reservation_date").toString(),
-                            resultSet.getTime("start_time").toString(),
-                            resultSet.getTime("end_time").toString()
-                    );
-                    reservations.add(reservation);
+                    reservations.add(mapToReservation(resultSet));
                 }
             }
         }
@@ -138,5 +114,16 @@ public class ReservationDao {
             int affectedRows = preparedStatement.executeUpdate();
             return affectedRows > 0;
         }
+    }
+
+    private Reservation mapToReservation(ResultSet resultSet) throws Exception {
+        return new Reservation(
+                resultSet.getInt("id"),
+                resultSet.getInt("device_id"),
+                resultSet.getString("user_name"),
+                resultSet.getDate("reservation_date").toString(),
+                resultSet.getTime("start_time").toString(),
+                resultSet.getTime("end_time").toString()
+        );
     }
 }
