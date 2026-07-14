@@ -1,11 +1,18 @@
+package com.godspeed.reservation;
+
+import com.godspeed.reservation.dao.DeviceDao;
+import com.godspeed.reservation.dao.ReservationDao;
+import com.godspeed.reservation.entity.Device;
+import com.godspeed.reservation.entity.Reservation;
+import com.godspeed.reservation.service.ReservationService;
+
 import java.util.ArrayList;
 import java.util.Scanner;
-
 public class Main {
     public static void main(String[] args) throws Exception {
         if (args.length < 1) {
             System.out.println("请在运行时传入 MySQL 密码");
-            System.out.println("示例：java -cp \".;lib\\mysql-connector-j-9.7.0.jar\" Main your_password");
+System.out.println("示例：mvn exec:java \"-Dexec.args=你的MySQL密码\"");
             return;
         }
 

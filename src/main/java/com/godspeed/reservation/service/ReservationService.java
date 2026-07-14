@@ -1,3 +1,10 @@
+package com.godspeed.reservation.service;
+
+import com.godspeed.reservation.dao.ReservationDao;
+import com.godspeed.reservation.entity.Device;
+import com.godspeed.reservation.entity.Reservation;
+
+import java.time.LocalTime;
 import java.util.ArrayList;
 
 public class ReservationService {

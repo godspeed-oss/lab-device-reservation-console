@@ -1,3 +1,4 @@
+package com.godspeed.reservation.entity;
 public class Device {
     private int id;
     private String name;

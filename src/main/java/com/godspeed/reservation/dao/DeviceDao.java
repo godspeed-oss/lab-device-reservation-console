@@ -1,6 +1,12 @@
+package com.godspeed.reservation.dao;
+
+import com.godspeed.reservation.entity.Device;
+import com.godspeed.reservation.util.DbUtil;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
