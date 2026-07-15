@@ -10,23 +10,22 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 public class DeviceDao {
-
     public ArrayList<Device> findAll() throws Exception {
-        ArrayList<Device> devices = new ArrayList<>();
-
         String sql = "SELECT id, name, type, status FROM device ORDER BY id";
 
         try (
                 Connection connection = DbUtil.getConnection();
-                Statement statement = connection.createStatement();
-                ResultSet resultSet = statement.executeQuery(sql)
+                PreparedStatement statement = connection.prepareStatement(sql);
+                ResultSet resultSet = statement.executeQuery()
         ) {
+            ArrayList<Device> devices = new ArrayList<>();
+
             while (resultSet.next()) {
                 devices.add(mapToDevice(resultSet));
             }
-        }
 
-        return devices;
+            return devices;
+        }
     }
 
     public Device findById(int id) throws Exception {
@@ -34,95 +33,64 @@ public class DeviceDao {
 
         try (
                 Connection connection = DbUtil.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)
+                PreparedStatement statement = connection.prepareStatement(sql)
         ) {
-            preparedStatement.setInt(1, id);
+            statement.setInt(1, id);
 
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     return mapToDevice(resultSet);
                 }
+
+                return null;
             }
         }
-
-        return null;
     }
 
-    public ArrayList<Device> findByNameKeyword(String keyword) throws Exception {
-        ArrayList<Device> devices = new ArrayList<>();
-
+    public ArrayList<Device> findByName(String keyword) throws Exception {
         String sql = "SELECT id, name, type, status FROM device WHERE name LIKE ? ORDER BY id";
 
         try (
                 Connection connection = DbUtil.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)
+                PreparedStatement statement = connection.prepareStatement(sql)
         ) {
-            preparedStatement.setString(1, "%" + keyword + "%");
+            statement.setString(1, "%" + keyword + "%");
 
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            try (ResultSet resultSet = statement.executeQuery()) {
+                ArrayList<Device> devices = new ArrayList<>();
+
                 while (resultSet.next()) {
                     devices.add(mapToDevice(resultSet));
                 }
+
+                return devices;
             }
         }
+    }
 
-        return devices;
+    public ArrayList<Device> findByNameKeyword(String keyword) throws Exception {
+        return findByName(keyword);
     }
 
     public ArrayList<Device> findByStatus(String status) throws Exception {
-        ArrayList<Device> devices = new ArrayList<>();
-
         String sql = "SELECT id, name, type, status FROM device WHERE status = ? ORDER BY id";
 
         try (
                 Connection connection = DbUtil.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)
+                PreparedStatement statement = connection.prepareStatement(sql)
         ) {
-            preparedStatement.setString(1, status);
+            statement.setString(1, status);
 
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            try (ResultSet resultSet = statement.executeQuery()) {
+                ArrayList<Device> devices = new ArrayList<>();
+
                 while (resultSet.next()) {
                     devices.add(mapToDevice(resultSet));
                 }
+
+                return devices;
             }
         }
-
-        return devices;
-    }
-
-    public int countAll() throws Exception {
-        String sql = "SELECT COUNT(*) FROM device";
-
-        try (
-                Connection connection = DbUtil.getConnection();
-                Statement statement = connection.createStatement();
-                ResultSet resultSet = statement.executeQuery(sql)
-        ) {
-            if (resultSet.next()) {
-                return resultSet.getInt(1);
-            }
-        }
-
-        return 0;
-    }
-
-    public int countByStatus(String status) throws Exception {
-        String sql = "SELECT COUNT(*) FROM device WHERE status = ?";
-
-        try (
-                Connection connection = DbUtil.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)
-        ) {
-            preparedStatement.setString(1, status);
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return resultSet.getInt(1);
-                }
-            }
-        }
-
-        return 0;
     }
 
     public int add(Device device) throws Exception {
@@ -130,25 +98,21 @@ public class DeviceDao {
 
         try (
                 Connection connection = DbUtil.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
+                PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
         ) {
-            preparedStatement.setString(1, device.getName());
-            preparedStatement.setString(2, device.getType());
-            preparedStatement.setString(3, device.getStatus());
+            statement.setString(1, device.getName());
+            statement.setString(2, device.getType());
+            statement.setString(3, device.getStatus());
 
-            int affectedRows = preparedStatement.executeUpdate();
+            statement.executeUpdate();
 
-            if (affectedRows == 0) {
-                return -1;
-            }
-
-            try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    return generatedKeys.getInt(1);
+            try (ResultSet resultSet = statement.getGeneratedKeys()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt(1);
                 }
-            }
 
-            return -1;
+                return 0;
+            }
         }
     }
 
@@ -157,15 +121,14 @@ public class DeviceDao {
 
         try (
                 Connection connection = DbUtil.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)
+                PreparedStatement statement = connection.prepareStatement(sql)
         ) {
-            preparedStatement.setString(1, device.getName());
-            preparedStatement.setString(2, device.getType());
-            preparedStatement.setString(3, device.getStatus());
-            preparedStatement.setInt(4, device.getId());
+            statement.setString(1, device.getName());
+            statement.setString(2, device.getType());
+            statement.setString(3, device.getStatus());
+            statement.setInt(4, device.getId());
 
-            int affectedRows = preparedStatement.executeUpdate();
-            return affectedRows > 0;
+            return statement.executeUpdate() > 0;
         }
     }
 
@@ -174,13 +137,12 @@ public class DeviceDao {
 
         try (
                 Connection connection = DbUtil.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)
+                PreparedStatement statement = connection.prepareStatement(sql)
         ) {
-            preparedStatement.setString(1, status);
-            preparedStatement.setInt(2, id);
+            statement.setString(1, status);
+            statement.setInt(2, id);
 
-            int affectedRows = preparedStatement.executeUpdate();
-            return affectedRows > 0;
+            return statement.executeUpdate() > 0;
         }
     }
 
@@ -189,12 +151,39 @@ public class DeviceDao {
 
         try (
                 Connection connection = DbUtil.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)
+                PreparedStatement statement = connection.prepareStatement(sql)
         ) {
-            preparedStatement.setInt(1, id);
+            statement.setInt(1, id);
+            return statement.executeUpdate() > 0;
+        }
+    }
 
-            int affectedRows = preparedStatement.executeUpdate();
-            return affectedRows > 0;
+    public int countAll() throws Exception {
+        String sql = "SELECT COUNT(*) AS count FROM device";
+
+        try (
+                Connection connection = DbUtil.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql);
+                ResultSet resultSet = statement.executeQuery()
+        ) {
+            resultSet.next();
+            return resultSet.getInt("count");
+        }
+    }
+
+    public int countByStatus(String status) throws Exception {
+        String sql = "SELECT COUNT(*) AS count FROM device WHERE status = ?";
+
+        try (
+                Connection connection = DbUtil.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+            statement.setString(1, status);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                resultSet.next();
+                return resultSet.getInt("count");
+            }
         }
     }
 

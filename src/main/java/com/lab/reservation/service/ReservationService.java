@@ -1,129 +1,115 @@
 package com.lab.reservation.service;
 
+import com.lab.reservation.dao.DeviceDao;
 import com.lab.reservation.dao.ReservationDao;
 import com.lab.reservation.entity.Device;
 import com.lab.reservation.entity.Reservation;
+import com.lab.reservation.exception.BusinessException;
 
-import java.time.LocalTime;
 import java.util.ArrayList;
 
 public class ReservationService {
-    private ReservationDao reservationDao;
+    private final ReservationDao reservationDao;
+    private final DeviceDao deviceDao;
 
     public ReservationService(ReservationDao reservationDao) {
         this.reservationDao = reservationDao;
+        this.deviceDao = new DeviceDao();
+    }
+
+    public ReservationService(ReservationDao reservationDao, DeviceDao deviceDao) {
+        this.reservationDao = reservationDao;
+        this.deviceDao = deviceDao;
     }
 
     public ArrayList<Reservation> findAllReservations() throws Exception {
-        return reservationDao.findAll();
+        return new ArrayList<>(reservationDao.findAll());
+    }
+
+    public ArrayList<Reservation> findReservationsByDeviceId(int deviceId) throws Exception {
+        Device device = deviceDao.findById(deviceId);
+        if (device == null) {
+            throw new BusinessException("设备不存在，无法查询预约记录");
+        }
+
+        return new ArrayList<>(reservationDao.findByDeviceId(deviceId));
+    }
+
+    public ArrayList<Reservation> findReservationsByDate(String reservationDate) throws Exception {
+        validateText(reservationDate, "预约日期不能为空");
+        return new ArrayList<>(reservationDao.findByDate(reservationDate));
     }
 
     public int countAllReservations() throws Exception {
-        return reservationDao.countAll();
+        return reservationDao.findAll().size();
     }
 
     public int addReservation(Device device, int deviceId, String userName, String reservationDate, String startTime, String endTime) throws Exception {
-        if (device == null) {
-            System.out.println("设备不存在，无法预约");
-            return -1;
-        }
-
-        if (!"可预约".equals(device.getStatus())) {
-            System.out.println("该设备当前状态为：" + device.getStatus() + "，无法预约");
-            return -1;
-        }
-
-        if (!isValidTimeRange(startTime, endTime)) {
-            System.out.println("时间段不合法，开始时间必须早于结束时间");
-            return -1;
-        }
-
-        if (hasTimeConflict(0, deviceId, reservationDate, startTime, endTime)) {
-            System.out.println("预约失败：该设备在这个时间段已有预约");
-            return -1;
-        }
+        validateReservationInput(device, deviceId, userName, reservationDate, startTime, endTime, 0);
 
         Reservation reservation = new Reservation(0, deviceId, userName, reservationDate, startTime, endTime);
         return reservationDao.add(reservation);
     }
 
-    public boolean updateReservation(int reservationId, Device device, int deviceId, String userName, String reservationDate, String startTime, String endTime) throws Exception {
-        Reservation oldReservation = reservationDao.findById(reservationId);
+    public boolean updateReservation(int id, Device device, int deviceId, String userName, String reservationDate, String startTime, String endTime) throws Exception {
+        Reservation oldReservation = reservationDao.findById(id);
         if (oldReservation == null) {
-            System.out.println("预约记录不存在，修改失败");
-            return false;
+            throw new BusinessException("预约记录不存在，无法修改");
+        }
+
+        validateReservationInput(device, deviceId, userName, reservationDate, startTime, endTime, id);
+
+        Reservation reservation = new Reservation(id, deviceId, userName, reservationDate, startTime, endTime);
+        return reservationDao.update(reservation);
+    }
+
+    public boolean deleteReservation(int id) throws Exception {
+        Reservation reservation = reservationDao.findById(id);
+        if (reservation == null) {
+            throw new BusinessException("预约记录不存在，无法删除");
+        }
+
+        return reservationDao.deleteById(id);
+    }
+
+    private void validateReservationInput(Device device, int deviceId, String userName, String reservationDate, String startTime, String endTime, int excludeReservationId) throws Exception {
+        if (device == null) {
+            device = deviceDao.findById(deviceId);
         }
 
         if (device == null) {
-            System.out.println("设备不存在，无法修改预约");
-            return false;
+            throw new BusinessException("设备不存在，无法预约");
         }
 
         if (!"可预约".equals(device.getStatus())) {
-            System.out.println("该设备当前状态为：" + device.getStatus() + "，无法预约");
-            return false;
+            throw new BusinessException("该设备当前状态为：" + device.getStatus() + "，不能预约");
         }
 
-        if (!isValidTimeRange(startTime, endTime)) {
-            System.out.println("时间段不合法，开始时间必须早于结束时间");
-            return false;
+        validateText(userName, "预约人姓名不能为空");
+        validateText(reservationDate, "预约日期不能为空");
+        validateText(startTime, "开始时间不能为空");
+        validateText(endTime, "结束时间不能为空");
+
+        if (startTime.compareTo(endTime) >= 0) {
+            throw new BusinessException("开始时间必须早于结束时间");
         }
 
-        if (hasTimeConflict(reservationId, deviceId, reservationDate, startTime, endTime)) {
-            System.out.println("修改失败：该设备在这个时间段已有预约");
-            return false;
-        }
+        boolean conflict = reservationDao.hasConflict(
+                deviceId,
+                reservationDate,
+                startTime,
+                endTime,
+                excludeReservationId
+        );
 
-        Reservation newReservation = new Reservation(reservationId, deviceId, userName, reservationDate, startTime, endTime);
-        return reservationDao.update(newReservation);
-    }
-
-    public boolean deleteReservation(int reservationId) throws Exception {
-        return reservationDao.deleteById(reservationId);
-    }
-
-    public ArrayList<Reservation> findReservationsByDeviceId(int deviceId) throws Exception {
-        return reservationDao.findByDeviceId(deviceId);
-    }
-
-    public ArrayList<Reservation> findReservationsByDate(String reservationDate) throws Exception {
-        return reservationDao.findByDate(reservationDate);
-    }
-
-    private boolean isValidTimeRange(String startTime, String endTime) {
-        try {
-            LocalTime start = LocalTime.parse(startTime);
-            LocalTime end = LocalTime.parse(endTime);
-            return start.isBefore(end);
-        } catch (Exception e) {
-            return false;
+        if (conflict) {
+            throw new BusinessException("该设备在这个时间段已经被预约");
         }
     }
 
-    private boolean hasTimeConflict(int currentReservationId, int deviceId, String reservationDate, String startTime, String endTime) throws Exception {
-        ArrayList<Reservation> reservations = reservationDao.findByDeviceId(deviceId);
-
-        LocalTime newStart = LocalTime.parse(startTime);
-        LocalTime newEnd = LocalTime.parse(endTime);
-
-        for (Reservation reservation : reservations) {
-            if (reservation.getId() == currentReservationId) {
-                continue;
-            }
-
-            if (!reservationDate.equals(reservation.getReservationDate())) {
-                continue;
-            }
-
-            LocalTime existingStart = LocalTime.parse(reservation.getStartTime());
-            LocalTime existingEnd = LocalTime.parse(reservation.getEndTime());
-
-            boolean conflict = newStart.isBefore(existingEnd) && newEnd.isAfter(existingStart);
-            if (conflict) {
-                return true;
-            }
+    private void validateText(String value, String message) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new BusinessException(message);
         }
-
-        return false;
     }
 }

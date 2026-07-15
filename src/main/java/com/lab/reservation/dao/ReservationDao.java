@@ -10,25 +10,25 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Time;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ReservationDao {
-
     public ArrayList<Reservation> findAll() throws Exception {
-        ArrayList<Reservation> reservations = new ArrayList<>();
-
-        String sql = "SELECT id, device_id, user_name, reservation_date, start_time, end_time FROM reservation ORDER BY reservation_date, start_time, id";
+        String sql = "SELECT id, device_id, user_name, reservation_date, start_time, end_time FROM reservation ORDER BY id";
 
         try (
                 Connection connection = DbUtil.getConnection();
-                Statement statement = connection.createStatement();
-                ResultSet resultSet = statement.executeQuery(sql)
+                PreparedStatement statement = connection.prepareStatement(sql);
+                ResultSet resultSet = statement.executeQuery()
         ) {
+            ArrayList<Reservation> reservations = new ArrayList<>();
+
             while (resultSet.next()) {
                 reservations.add(mapToReservation(resultSet));
             }
-        }
 
-        return reservations;
+            return reservations;
+        }
     }
 
     public Reservation findById(int id) throws Exception {
@@ -36,95 +36,60 @@ public class ReservationDao {
 
         try (
                 Connection connection = DbUtil.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)
+                PreparedStatement statement = connection.prepareStatement(sql)
         ) {
-            preparedStatement.setInt(1, id);
+            statement.setInt(1, id);
 
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     return mapToReservation(resultSet);
                 }
+
+                return null;
             }
         }
-
-        return null;
     }
 
     public ArrayList<Reservation> findByDeviceId(int deviceId) throws Exception {
-        ArrayList<Reservation> reservations = new ArrayList<>();
-
-        String sql = "SELECT id, device_id, user_name, reservation_date, start_time, end_time FROM reservation WHERE device_id = ? ORDER BY reservation_date, start_time, id";
+        String sql = "SELECT id, device_id, user_name, reservation_date, start_time, end_time FROM reservation WHERE device_id = ? ORDER BY reservation_date, start_time";
 
         try (
                 Connection connection = DbUtil.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)
+                PreparedStatement statement = connection.prepareStatement(sql)
         ) {
-            preparedStatement.setInt(1, deviceId);
+            statement.setInt(1, deviceId);
 
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            try (ResultSet resultSet = statement.executeQuery()) {
+                ArrayList<Reservation> reservations = new ArrayList<>();
+
                 while (resultSet.next()) {
                     reservations.add(mapToReservation(resultSet));
                 }
+
+                return reservations;
             }
         }
-
-        return reservations;
-    }
-
-    public boolean existsByDeviceId(int deviceId) throws Exception {
-        String sql = "SELECT COUNT(*) FROM reservation WHERE device_id = ?";
-
-        try (
-                Connection connection = DbUtil.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)
-        ) {
-            preparedStatement.setInt(1, deviceId);
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return resultSet.getInt(1) > 0;
-                }
-            }
-        }
-
-        return false;
     }
 
     public ArrayList<Reservation> findByDate(String reservationDate) throws Exception {
-        ArrayList<Reservation> reservations = new ArrayList<>();
-
-        String sql = "SELECT id, device_id, user_name, reservation_date, start_time, end_time FROM reservation WHERE reservation_date = ? ORDER BY start_time, id";
+        String sql = "SELECT id, device_id, user_name, reservation_date, start_time, end_time FROM reservation WHERE reservation_date = ? ORDER BY device_id, start_time";
 
         try (
                 Connection connection = DbUtil.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)
+                PreparedStatement statement = connection.prepareStatement(sql)
         ) {
-            preparedStatement.setDate(1, Date.valueOf(reservationDate));
+            statement.setDate(1, Date.valueOf(reservationDate));
 
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            try (ResultSet resultSet = statement.executeQuery()) {
+                ArrayList<Reservation> reservations = new ArrayList<>();
+
                 while (resultSet.next()) {
                     reservations.add(mapToReservation(resultSet));
                 }
+
+                return reservations;
             }
         }
-
-        return reservations;
-    }
-
-    public int countAll() throws Exception {
-        String sql = "SELECT COUNT(*) FROM reservation";
-
-        try (
-                Connection connection = DbUtil.getConnection();
-                Statement statement = connection.createStatement();
-                ResultSet resultSet = statement.executeQuery(sql)
-        ) {
-            if (resultSet.next()) {
-                return resultSet.getInt(1);
-            }
-        }
-
-        return 0;
     }
 
     public int add(Reservation reservation) throws Exception {
@@ -132,27 +97,23 @@ public class ReservationDao {
 
         try (
                 Connection connection = DbUtil.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
+                PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
         ) {
-            preparedStatement.setInt(1, reservation.getDeviceId());
-            preparedStatement.setString(2, reservation.getUserName());
-            preparedStatement.setDate(3, Date.valueOf(reservation.getReservationDate()));
-            preparedStatement.setTime(4, Time.valueOf(reservation.getStartTime() + ":00"));
-            preparedStatement.setTime(5, Time.valueOf(reservation.getEndTime() + ":00"));
+            statement.setInt(1, reservation.getDeviceId());
+            statement.setString(2, reservation.getUserName());
+            statement.setDate(3, Date.valueOf(reservation.getDate()));
+            statement.setTime(4, Time.valueOf(reservation.getStartTime() + ":00"));
+            statement.setTime(5, Time.valueOf(reservation.getEndTime() + ":00"));
 
-            int affectedRows = preparedStatement.executeUpdate();
+            statement.executeUpdate();
 
-            if (affectedRows == 0) {
-                return -1;
-            }
-
-            try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    return generatedKeys.getInt(1);
+            try (ResultSet resultSet = statement.getGeneratedKeys()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt(1);
                 }
-            }
 
-            return -1;
+                return 0;
+            }
         }
     }
 
@@ -161,17 +122,16 @@ public class ReservationDao {
 
         try (
                 Connection connection = DbUtil.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)
+                PreparedStatement statement = connection.prepareStatement(sql)
         ) {
-            preparedStatement.setInt(1, reservation.getDeviceId());
-            preparedStatement.setString(2, reservation.getUserName());
-            preparedStatement.setDate(3, Date.valueOf(reservation.getReservationDate()));
-            preparedStatement.setTime(4, Time.valueOf(reservation.getStartTime() + ":00"));
-            preparedStatement.setTime(5, Time.valueOf(reservation.getEndTime() + ":00"));
-            preparedStatement.setInt(6, reservation.getId());
+            statement.setInt(1, reservation.getDeviceId());
+            statement.setString(2, reservation.getUserName());
+            statement.setDate(3, Date.valueOf(reservation.getDate()));
+            statement.setTime(4, Time.valueOf(reservation.getStartTime() + ":00"));
+            statement.setTime(5, Time.valueOf(reservation.getEndTime() + ":00"));
+            statement.setInt(6, reservation.getId());
 
-            int affectedRows = preparedStatement.executeUpdate();
-            return affectedRows > 0;
+            return statement.executeUpdate() > 0;
         }
     }
 
@@ -180,12 +140,54 @@ public class ReservationDao {
 
         try (
                 Connection connection = DbUtil.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sql)
+                PreparedStatement statement = connection.prepareStatement(sql)
         ) {
-            preparedStatement.setInt(1, id);
+            statement.setInt(1, id);
+            return statement.executeUpdate() > 0;
+        }
+    }
 
-            int affectedRows = preparedStatement.executeUpdate();
-            return affectedRows > 0;
+    public boolean hasConflict(int deviceId, String reservationDate, String startTime, String endTime, int excludeReservationId) throws Exception {
+        String sql = """
+                SELECT COUNT(*) AS count
+                FROM reservation
+                WHERE device_id = ?
+                  AND reservation_date = ?
+                  AND id <> ?
+                  AND start_time < ?
+                  AND end_time > ?
+                """;
+
+        try (
+                Connection connection = DbUtil.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+            statement.setInt(1, deviceId);
+            statement.setDate(2, Date.valueOf(reservationDate));
+            statement.setInt(3, excludeReservationId);
+            statement.setTime(4, Time.valueOf(endTime + ":00"));
+            statement.setTime(5, Time.valueOf(startTime + ":00"));
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                resultSet.next();
+                return resultSet.getInt("count") > 0;
+            }
+        }
+    }
+
+    public boolean existsByDeviceId(int deviceId) throws Exception {
+        String sql = "SELECT COUNT(*) AS count FROM reservation WHERE device_id = ?";
+
+        try (
+                Connection connection = DbUtil.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+            statement.setInt(1, deviceId);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                resultSet.next();
+                return resultSet.getInt("count") > 0;
+            }
         }
     }
 
@@ -195,8 +197,8 @@ public class ReservationDao {
                 resultSet.getInt("device_id"),
                 resultSet.getString("user_name"),
                 resultSet.getDate("reservation_date").toString(),
-                resultSet.getTime("start_time").toString(),
-                resultSet.getTime("end_time").toString()
+                resultSet.getTime("start_time").toString().substring(0, 5),
+                resultSet.getTime("end_time").toString().substring(0, 5)
         );
     }
 }
