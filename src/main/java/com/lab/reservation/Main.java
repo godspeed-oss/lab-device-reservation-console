@@ -6,11 +6,14 @@ import com.lab.reservation.entity.Device;
 import com.lab.reservation.entity.Reservation;
 import com.lab.reservation.exception.BusinessException;
 import com.lab.reservation.service.ReservationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
     private static final Scanner scanner = new Scanner(System.in);
 
     private static final DeviceDao deviceDao = new DeviceDao();
@@ -18,6 +21,8 @@ public class Main {
     private static final ReservationService reservationService = new ReservationService(reservationDao, deviceDao);
 
     public static void main(String[] args) {
+        logger.info("实验室设备预约系统启动");
+
         while (true) {
             printMenu();
 
@@ -25,58 +30,32 @@ public class Main {
 
             try {
                 switch (choice) {
-                    case 1:
-                        showDeviceList();
-                        break;
-                    case 2:
-                        showReservationList();
-                        break;
-                    case 3:
-                        addReservation();
-                        break;
-                    case 4:
-                        showReservationsByDeviceId();
-                        break;
-                    case 5:
-                        deleteReservation();
-                        break;
-                    case 6:
-                        updateDeviceStatus();
-                        break;
-                    case 7:
-                        showReservationsByDate();
-                        break;
-                    case 8:
-                        addDevice();
-                        break;
-                    case 9:
-                        updateDevice();
-                        break;
-                    case 10:
-                        deleteDevice();
-                        break;
-                    case 11:
-                        searchDevicesByName();
-                        break;
-                    case 12:
-                        searchDevicesByStatus();
-                        break;
-                    case 13:
-                        updateReservation();
-                        break;
-                    case 14:
-                        showStatistics();
-                        break;
-                    case 0:
+                    case 1 -> showDeviceList();
+                    case 2 -> showReservationList();
+                    case 3 -> addReservation();
+                    case 4 -> showReservationsByDeviceId();
+                    case 5 -> deleteReservation();
+                    case 6 -> updateDeviceStatus();
+                    case 7 -> showReservationsByDate();
+                    case 8 -> addDevice();
+                    case 9 -> updateDevice();
+                    case 10 -> deleteDevice();
+                    case 11 -> searchDevicesByName();
+                    case 12 -> searchDevicesByStatus();
+                    case 13 -> updateReservation();
+                    case 14 -> showStatistics();
+                    case 0 -> {
+                        logger.info("实验室设备预约系统退出");
                         System.out.println("系统已退出");
                         return;
-                    default:
-                        System.out.println("功能编号不存在，请重新输入");
-                        break;
+                    }
+                    default -> System.out.println("功能编号不存在，请重新输入");
                 }
             } catch (BusinessException e) {
+                logger.warn("业务操作失败：{}", e.getMessage());
                 System.out.println("操作失败：" + e.getMessage());
             } catch (Exception e) {
+                logger.error("系统异常", e);
                 System.out.println("系统异常，请稍后重试");
                 System.out.println("错误信息：" + e.getMessage());
             }
@@ -128,6 +107,7 @@ public class Main {
         String endTime = readRequiredText("请输入结束时间，例如 11:00：");
 
         int newId = reservationService.addReservation(device, deviceId, userName, reservationDate, startTime, endTime);
+        logger.info("新增预约成功，预约编号：{}，设备编号：{}，预约人：{}", newId, deviceId, userName);
         System.out.println("预约新增成功，预约编号：" + newId);
     }
 
@@ -149,6 +129,7 @@ public class Main {
 
         boolean success = reservationService.deleteReservation(id);
         if (success) {
+            logger.info("删除预约记录成功，预约编号：{}", id);
             System.out.println("预约记录删除成功");
         } else {
             System.out.println("预约记录删除失败");
@@ -172,6 +153,7 @@ public class Main {
 
         boolean success = deviceDao.update(device);
         if (success) {
+            logger.info("修改设备状态成功，设备编号：{}，新状态：{}", deviceId, status);
             System.out.println("设备状态修改成功");
         } else {
             System.out.println("设备状态修改失败");
@@ -194,6 +176,7 @@ public class Main {
         Device device = new Device(0, name, type, status);
         int newId = deviceDao.add(device);
 
+        logger.info("新增设备成功，设备编号：{}，设备名称：{}", newId, name);
         System.out.println("设备新增成功，设备编号：" + newId);
     }
 
@@ -218,6 +201,7 @@ public class Main {
 
         boolean success = deviceDao.update(device);
         if (success) {
+            logger.info("修改设备信息成功，设备编号：{}", deviceId);
             System.out.println("设备信息修改成功");
         } else {
             System.out.println("设备信息修改失败");
@@ -243,6 +227,7 @@ public class Main {
 
         boolean success = deviceDao.deleteById(deviceId);
         if (success) {
+            logger.info("删除设备成功，设备编号：{}", deviceId);
             System.out.println("设备删除成功");
         } else {
             System.out.println("设备删除失败");
@@ -283,6 +268,7 @@ public class Main {
 
         boolean success = reservationService.updateReservation(id, device, deviceId, userName, reservationDate, startTime, endTime);
         if (success) {
+            logger.info("修改预约记录成功，预约编号：{}", id);
             System.out.println("预约记录修改成功");
         } else {
             System.out.println("预约记录修改失败");
